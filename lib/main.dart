@@ -23,7 +23,7 @@ class Main extends StatefulWidget {
 class _MainState extends State<Main> {
   @override
   Widget build(BuildContext context) {
-    var store = StoreKeeper.of(context).getStore<Store>();
+    Store store = StoreKeeper.of(context).getStore();
     StoreKeeper.of(context).notifyOn([IncrementA]);
 
     return Container(

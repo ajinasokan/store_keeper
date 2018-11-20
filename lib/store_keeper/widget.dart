@@ -1,40 +1,8 @@
-import 'dart:async';
-import 'package:async/async.dart' show StreamGroup;
 import 'package:flutter/material.dart';
+import 'package:async/async.dart' show StreamGroup;
 
-abstract class Model {}
-
-abstract class StoreModel {
-  static GlobalKey<_StoreKeeperProviderState> providerKey = GlobalKey();
-
-  static StoreModel instance;
-
-  StoreModel() {
-    instance = this;
-  }
-}
-
-abstract class Mutation<T extends StoreModel> {
-  static Type last;
-  T store;
-  Mutation() {
-    store = StoreModel.instance;
-    exec();
-    _getStreamOf(this.runtimeType).add(null);
-    last = this.runtimeType;
-    if (StoreModel.providerKey.currentState != null)
-      StoreModel.providerKey.currentState.setState(() {});
-  }
-  void exec();
-}
-
-Map<Type, StreamController<Null>> _streams = {};
-
-StreamController<Null> _getStreamOf(Type mutation) {
-  if (!_streams.containsKey(mutation))
-    _streams[mutation] = StreamController<Null>.broadcast();
-  return _streams[mutation];
-}
+import 'mutation.dart';
+import 'model.dart';
 
 class UpdateOn<T extends Mutation> extends StatelessWidget {
   final WidgetBuilder builder;
@@ -45,8 +13,9 @@ class UpdateOn<T extends Mutation> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Stream<Null> stream = mutations != null
-        ? StreamGroup.merge(mutations.map((m) => _getStreamOf(m).stream))
-        : _getStreamOf(T).stream;
+        ? StreamGroup.merge(
+            mutations.map((m) => Mutation.getStreamOf(m).stream))
+        : Mutation.getStreamOf(T).stream;
 
     return StreamBuilder<Null>(
       stream: stream,
