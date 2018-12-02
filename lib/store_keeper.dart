@@ -1,7 +1,6 @@
 library store_keeper;
 
-/// A Calculator.
-class Calculator {
-  /// Returns [value] plus 1.
-  int addOne(int value) => value + 1;
-}
+export 'package:store_keeper/store_keeper/widget.dart';
+export 'package:store_keeper/store_keeper/mutation.dart';
+export 'package:store_keeper/store_keeper/model.dart';
+export 'package:store_keeper/store_keeper/http.dart';
