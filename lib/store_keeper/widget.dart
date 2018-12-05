@@ -50,7 +50,7 @@ class StoreKeeper extends InheritedModel<Type> {
 
   @override
   bool updateShouldNotifyDependent(_, Set<Type> deps) =>
-      deps.contains(Mutation.last);
+      deps.intersection(Mutation.last).length > 0;
 }
 
 class StoreKeeperProvider<T extends StoreModel> extends StatefulWidget {

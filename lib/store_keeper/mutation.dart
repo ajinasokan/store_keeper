@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'model.dart';
 
+typedef Mutation MutationClosure();
+
 abstract class Mutation<T extends StoreModel> {
-  static Type last;
+  static Set<Type> last = Set<Type>();
 
   static Map<Type, StreamController<Null>> streams = {};
 
@@ -13,17 +15,35 @@ abstract class Mutation<T extends StoreModel> {
   }
 
   T store;
+  List<MutationClosure> laterMutations=[];
   Mutation() {
     store = StoreModel.instance;
 
     // execute mutation
     var result = exec();
-    notify();
+    if(result is Future) {
+      result.then((future_result) {
+        notify();
 
-    // and perform side effects
-    if (result != null) {}
+        // and perform side effects
+        if (future_result != null) {}
 
-    notify();
+        notify();
+        laterMutations.forEach((closure) => closure());
+      });
+    } else {
+      notify();
+
+      // and perform side effects
+      if (result != null) {}
+
+      notify();
+      laterMutations.forEach((closure) => closure());
+    }
+  }
+
+  void later(MutationClosure closure) {
+    laterMutations.add(closure);
   }
 
   void notify() {
@@ -31,7 +51,7 @@ abstract class Mutation<T extends StoreModel> {
     getStreamOf(this.runtimeType).add(null);
 
     // notify inherited model subscribers
-    last = this.runtimeType;
+    last.add(this.runtimeType);
     if (StoreModel.providerKey.currentState != null)
       StoreModel.providerKey.currentState.setState(() {});
   }
