@@ -1,6 +1,35 @@
+```shell
+mkdir lib/components
+mkdir lib/screens
+mkdir lib/mutations
+mkdir lib/models
+mkdir lib/constants
+mkdir lib/resources
+mkdir lib/framework
+
+touch lib/components/index.dart
+touch lib/screens/index.dart
+touch lib/mutations/index.dart
+touch lib/models/index.dart
+touch lib/constants/index.dart
+touch lib/resources/index.dart
+touch lib/framework/index.dart
+touch lib/app.dart
+
+touch Makefile
+```
+
+```make
+
+```
+
 ```dart
 // app.dart
 export 'package:store_keeper/store_keeper.dart';
+
+export 'package:flutter/material.dart';
+export 'package:flutter/services.dart';
+export 'package:flutter/rendering.dart';
 
 export 'package:app/models/index.dart';
 export 'package:app/mutations/index.dart';
@@ -8,6 +37,7 @@ export 'package:app/constants/index.dart';
 export 'package:app/components/index.dart';
 export 'package:app/screens/index.dart';
 export 'package:app/resources/index.dart';
+export 'package:app/framework/index.dart';
 ```
 
 ```dart
