@@ -1,9 +1,86 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 import 'mutation.dart';
+import 'package:meta/meta.dart';
 
-export 'package:http/http.dart' show Request, Response;
+class HTTPClient {
+  static Future<Response> send(Request request) async {
+    http.BaseRequest _request;
+
+    var uri = Uri.parse(request.url)..replace(queryParameters: request.params);
+    print(request.params);
+    print(uri.toString());
+
+    if (request.bodyFiles == null) {
+      _request = http.Request(request.method, uri);
+
+      if (request.body != null) (_request as http.Request).body = request.body;
+      if (request.bodyBytes != null)
+        (_request as http.Request).bodyBytes = request.bodyBytes;
+      if (request.bodyFields != null)
+        (_request as http.Request).bodyFields = request.bodyFields;
+      if (request.bodyJSON != null) {
+        (_request as http.Request).body = json.encode(request.bodyJSON);
+        _request.headers['content-type'] = 'application/json';
+      }
+    } else {
+      _request = http.MultipartRequest(request.method, uri);
+      (_request as http.MultipartRequest).files.addAll(request.bodyFiles);
+      if (request.bodyFields != null)
+        (_request as http.MultipartRequest).fields.addAll(request.bodyFields);
+    }
+    _request.headers.addAll(request.headers);
+
+    var _response = await http.Response.fromStream(await _request.send());
+
+    print(_response.statusCode);
+
+    return Response(
+      statusCode: _response.statusCode,
+      headers: _response.headers,
+      body: _response.body,
+    );
+  }
+}
+
+class Request {
+  final String method;
+  final String url;
+  final Map<String, String> params;
+  final Map<String, String> headers;
+  final String body;
+  final List<int> bodyBytes;
+  final Map<String, String> bodyFields;
+  final Map<String, String> bodyJSON;
+  final List<http.MultipartFile> bodyFiles;
+
+  Request({
+    this.method = "GET",
+    @required this.url,
+    this.params = const {},
+    this.headers = const {},
+    this.body,
+    this.bodyBytes,
+    this.bodyFields,
+    this.bodyFiles,
+    this.bodyJSON,
+  });
+}
+
+class Response {
+  final int statusCode;
+  final String body;
+  final Map<String, String> headers;
+
+  Response({
+    this.statusCode,
+    this.headers,
+    this.body,
+  });
+
+  static Response get instance => Response();
+}
 
 class HttpEffects implements SideEffects<Request, Future<Response>> {
   Future<void> future;
@@ -14,11 +91,13 @@ class HttpEffects implements SideEffects<Request, Future<Response>> {
     future = completer.future;
     Response response;
     try {
-      response = await Response.fromStream(await result.send());
-      if (response.statusCode == 200)
+      Response response = await HTTPClient.send(result);
+
+      if (response.statusCode == 200) {
         success(response);
-      else
+      } else {
         fail(response);
+      }
     } on Exception catch (e, s) {
       error(e, s);
     }
@@ -30,38 +109,4 @@ class HttpEffects implements SideEffects<Request, Future<Response>> {
   void success(Response response) {}
   void fail(Response response) {}
   void error(Exception exception, StackTrace stackTrace) {}
-}
-
-Request HttpRequest({
-  String method,
-  String url,
-  Map<String, String> params,
-  Map<String, String> headers,
-  String body,
-  List<int> bodyBytes,
-  Map<String, String> bodyFields,
-  Map<String, String> bodyJSON,
-  List<MultipartFile> bodyFiles,
-}) {
-  var uri = Uri.parse(url)..queryParameters.addAll(params);
-  BaseRequest request;
-  if (bodyFiles == null) {
-    request = Request(method, uri);
-
-    if (body != null) (request as Request).body = body;
-    if (bodyBytes != null) (request as Request).bodyBytes = bodyBytes;
-    if (bodyFields != null) (request as Request).bodyFields = bodyFields;
-    if (bodyJSON != null) {
-      (request as Request).body = json.encode(bodyJSON);
-      request.headers['content-type'] = 'application/json';
-    }
-  } else {
-    request = MultipartRequest(method, uri);
-    (request as MultipartRequest).files.addAll(bodyFiles);
-    if (bodyFields != null)
-      (request as MultipartRequest).fields.addAll(bodyFields);
-  }
-  request.headers.addAll(headers);
-
-  return request;
 }

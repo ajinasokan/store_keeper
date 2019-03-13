@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'model.dart';
 
-typedef Mutation MutationClosure();
+typedef GenericMutation MutationClosure();
 
-abstract class Mutation<T extends StoreModel> {
+abstract class GenericMutation<T extends StoreModel> {
   static Set<Type> last = Set<Type>();
 
   static Map<Type, StreamController<Null>> streams = {};
@@ -15,18 +15,20 @@ abstract class Mutation<T extends StoreModel> {
   }
 
   T store;
-  List<MutationClosure> laterMutations=[];
-  Mutation() {
+  List<MutationClosure> laterMutations = [];
+  GenericMutation() {
     store = StoreModel.instance;
 
     // execute mutation
     var result = exec();
-    if(result is Future) {
+    if (result is Future) {
       result.then((future_result) {
         notify();
 
         // and perform side effects
-        if (future_result != null) {}
+        if (future_result != null) {
+          if (this is SideEffects) (this as SideEffects).branch(result);
+        }
 
         notify();
         laterMutations.forEach((closure) => closure());
@@ -35,7 +37,9 @@ abstract class Mutation<T extends StoreModel> {
       notify();
 
       // and perform side effects
-      if (result != null) {}
+      if (result != null) {
+        if (this is SideEffects) (this as SideEffects).branch(result);
+      }
 
       notify();
       laterMutations.forEach((closure) => closure());

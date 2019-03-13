@@ -4,7 +4,7 @@ import 'package:async/async.dart' show StreamGroup;
 import 'mutation.dart';
 import 'model.dart';
 
-class UpdateOn<T extends Mutation> extends StatelessWidget {
+class UpdateOn<T extends GenericMutation> extends StatelessWidget {
   final WidgetBuilder builder;
   final List<Type> mutations;
 
@@ -14,8 +14,8 @@ class UpdateOn<T extends Mutation> extends StatelessWidget {
   Widget build(BuildContext context) {
     Stream<Null> stream = mutations != null
         ? StreamGroup.merge(
-            mutations.map((m) => Mutation.getStreamOf(m).stream))
-        : Mutation.getStreamOf(T).stream;
+            mutations.map((m) => GenericMutation.getStreamOf(m).stream))
+        : GenericMutation.getStreamOf(T).stream;
 
     return StreamBuilder<Null>(
       stream: stream,
@@ -50,7 +50,7 @@ class StoreKeeper extends InheritedModel<Type> {
 
   @override
   bool updateShouldNotifyDependent(_, Set<Type> deps) =>
-      deps.intersection(Mutation.last).length > 0;
+      deps.intersection(GenericMutation.last).length > 0;
 }
 
 class StoreKeeperProvider<T extends StoreModel> extends StatefulWidget {
