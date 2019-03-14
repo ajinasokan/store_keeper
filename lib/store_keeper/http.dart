@@ -3,14 +3,13 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'mutation.dart';
 import 'package:meta/meta.dart';
+import 'dart:typed_data';
 
 class HTTPClient {
   static Future<Response> send(Request request) async {
     http.BaseRequest _request;
 
-    var uri = Uri.parse(request.url)..replace(queryParameters: request.params);
-    print(request.params);
-    print(uri.toString());
+    var uri = Uri.parse(request.url).replace(queryParameters: request.params);
 
     if (request.bodyFiles == null) {
       _request = http.Request(request.method, uri);
@@ -34,79 +33,109 @@ class HTTPClient {
 
     var _response = await http.Response.fromStream(await _request.send());
 
-    print(_response.statusCode);
-
     return Response(
       statusCode: _response.statusCode,
       headers: _response.headers,
-      body: _response.body,
+      decode: () => _response.body,
+      body: _response.bodyBytes,
     );
   }
 }
 
 class Request {
-  final String method;
-  final String url;
-  final Map<String, String> params;
-  final Map<String, String> headers;
-  final String body;
-  final List<int> bodyBytes;
-  final Map<String, String> bodyFields;
-  final Map<String, String> bodyJSON;
-  final List<http.MultipartFile> bodyFiles;
+  String method;
+  String url;
+  Map<String, String> params;
+  Map<String, String> headers;
+  String body;
+  List<int> bodyBytes;
+  Map<String, String> bodyFields;
+  Map<String, String> bodyJSON;
+  List<http.MultipartFile> bodyFiles;
+  Response success;
+  Response fail;
 
   Request({
-    this.method = "GET",
+    this.method,
     @required this.url,
-    this.params = const {},
-    this.headers = const {},
+    this.params,
+    this.headers,
     this.body,
     this.bodyBytes,
     this.bodyFields,
     this.bodyFiles,
     this.bodyJSON,
-  });
+    this.success,
+    this.fail,
+  }) {
+    method ??= "GET";
+    params ??= {};
+    headers ??= {};
+    success ??= Response();
+    fail ??= Response();
+  }
 }
 
 class Response {
-  final int statusCode;
-  final String body;
-  final Map<String, String> headers;
+  int statusCode;
+  Uint8List body;
+  Map<String, String> headers;
+  String Function() decode;
 
   Response({
     this.statusCode,
     this.headers,
     this.body,
+    this.decode,
   });
 
-  static Response get instance => Response();
+  Map toMap() => json.decode(decode());
+
+  void parse() {}
 }
 
-class HttpEffects implements SideEffects<Request, Future<Response>> {
+class HttpEffects<S extends Response, F extends Response>
+    implements SideEffects<Request, Future<Response>> {
   Future<void> future;
 
   @override
   Future<Response> branch(Request result) async {
+    assert(result.success is S, "Provide correct success model to request.");
+    assert(result.fail is F, "Provide correct fail model to request.");
+
     var completer = Completer<void>();
     future = completer.future;
     Response response;
+
     try {
       Response response = await HTTPClient.send(result);
 
       if (response.statusCode == 200) {
-        success(response);
+        result.success.statusCode = response.statusCode;
+        result.success.body = response.body;
+        result.success.headers = response.headers;
+        result.success.decode = response.decode;
+        result.success.parse();
+
+        success(result.success);
       } else {
-        fail(response);
+        result.fail.statusCode = response.statusCode;
+        result.fail.body = response.body;
+        result.fail.headers = response.headers;
+        result.fail.decode = response.decode;
+        result.fail.parse();
+
+        fail(result.fail);
       }
-    } on Exception catch (e, s) {
-      error(e, s);
+    } on Error catch (e) {
+      error(e, response);
     }
 
     completer.complete();
     return response;
   }
 
-  void success(Response response) {}
-  void fail(Response response) {}
-  void error(Exception exception, StackTrace stackTrace) {}
+  void success(S response) {}
+  void fail(F response) {}
+  void error(Error error, Response response) {}
 }
