@@ -108,6 +108,13 @@ class AppState extends State<App> {
 ```
 
 ```dart
+abstract class Mutation extends GenericMutation<Store> {}
+
+abstract class APIRequest<S extends Response, F extends Response>
+    extends GenericMutation<Store> with HttpEffects<S, F> {}
+```
+
+```dart
 // mutations.dart
 import 'package:app/app.dart';
 
@@ -118,6 +125,44 @@ class LoadStore extends Mutation<Store> {
     if (json != null) store.initFromJson(json);
 
     store.storeLoaded = true;
+  }
+}
+
+class HackerNews extends APIRequest<StoryResponse, Response> {
+  Request exec() {
+    return Request(
+      method: "GET",
+      url: "https://hacker-news.firebaseio.com/v0/item/8863.json",
+      params: {"print": "pretty"},
+      success: StoryResponse(),
+    );
+  }
+
+  void fail(Response response) {
+    print("fail");
+  }
+
+  void success(StoryResponse response) {
+    print(response.userId);
+    print("success");
+  }
+
+  void error(Error err, Response response) {
+    print(err.stackTrace);
+    print("error");
+  }
+}
+
+class StoryResponse extends Response {
+  String userId = "";
+  String title = "";
+  int score = 0;
+
+  void parse() {
+    var data = toMap();
+    userId = data["by"];
+    score = data["score"];
+    title = data["title"];
   }
 }
 ```
