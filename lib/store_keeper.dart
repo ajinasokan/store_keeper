@@ -6,6 +6,7 @@ import 'mutation.dart';
 
 export 'inventory.dart' show Store;
 export 'mutation.dart';
+export 'update_on.dart';
 
 class StoreKeeper extends StatefulWidget {
   final Widget child;
