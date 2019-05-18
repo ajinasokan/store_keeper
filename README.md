@@ -1,3 +1,143 @@
+## Simple Example
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:store_keeper/store_keeper.dart';
+
+// Build store and make it part of app
+void main() {
+  runApp(StoreKeeper(
+    store: AppStore(),
+    child: MyApp(),
+  ));
+}
+
+// Store definition
+class AppStore extends Store {
+  int count = 0;
+}
+
+// Mutations
+class Increment extends Mutation<AppStore> {
+  exec() => store.count++;
+}
+
+class Multiply extends Mutation<AppStore> {
+  final int by;
+
+  Multiply({this.by});
+
+  exec() => store.count *= by;
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Define when this widget should re render
+    StoreKeeper.update(context, on: [Increment, Multiply]);
+
+    // Get access to the store
+    var store = StoreKeeper.store as AppStore;
+
+    return MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text("Count: ${store.count}"),
+              RaisedButton(
+                child: Text("Increment"),
+                onPressed: () {
+                  // Invoke mutation
+                  Increment();
+                },
+              ),
+              RaisedButton(
+                child: Text("Decrement"),
+                onPressed: () {
+                  // Invoke mutation with params
+                  Multiply(by: 2);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+## Mutations using functions
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:store_keeper/store_keeper.dart';
+
+// Build store and make it part of app
+void main() {
+  runApp(StoreKeeper(
+    store: AppStore(),
+    child: MyApp(),
+  ));
+}
+
+// Store definition
+class AppStore extends Store {
+  int count = 0;
+}
+
+// Mutations
+void increment() {
+  (StoreKeeper.store as AppStore).count++;
+  StoreKeeper.notify(increment);
+}
+
+void multiply({int by}) {
+  (StoreKeeper.store as AppStore).count *= by;
+  StoreKeeper.notify(multiply);
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Define when this widget should re render
+    StoreKeeper.update(context, on: [increment, multiply]);
+
+    // Get access to the store
+    var store = StoreKeeper.store as AppStore;
+
+    return MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text("Count: ${store.count}"),
+              RaisedButton(
+                child: Text("Increment"),
+                onPressed: () {
+                  // Invoke mutation
+                  increment();
+                },
+              ),
+              RaisedButton(
+                child: Text("Decrement"),
+                onPressed: () {
+                  // Invoke mutation with params
+                  multiply(by: 2);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
 ```shell
 mkdir lib/components
 mkdir lib/screens
@@ -23,6 +163,8 @@ touch Makefile
 
 ```
 
+## Project structure
+
 ```dart
 // app.dart
 export 'package:store_keeper/store_keeper.dart';
@@ -47,8 +189,8 @@ import 'package:app/app.dart';
 
 void main() {
   runApp(
-    StoreKeeperProvider(
-      store: Store(),
+    StoreKeeper(
+      store: AppStore(),
       child: App(),
     ),
   );
@@ -70,11 +212,11 @@ class AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
-    StoreKeeper.of(context).notifyOn([
+    StoreKeeper.update(context, on: [
       LoadStore,
       ToggleNightMode,
     ]);
-    var store = StoreKeeper.of(context).getStore<Store>();
+    var store = StoreKeeper.store as AppStore;
     if (!store.storeLoaded) return Container(color: Colors.white);
 
     var theme;
@@ -108,17 +250,17 @@ class AppState extends State<App> {
 ```
 
 ```dart
-abstract class Mutation extends GenericMutation<Store> {}
+abstract class Mutation extends Mutation<AppStore> {}
 
 abstract class APIRequest<S extends Response, F extends Response>
-    extends GenericMutation<Store> with HttpEffects<S, F> {}
+    extends Mutation<AppStore> with HttpEffects<S, F> {}
 ```
 
 ```dart
 // mutations.dart
 import 'package:app/app.dart';
 
-class LoadStore extends Mutation<Store> {
+class LoadStore extends Mutation<AppStore> {
   Future<void> exec() async {
     var prefs = await SharedPreferences.getInstance();
     var json = prefs.getString("store");
