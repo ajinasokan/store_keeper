@@ -1,3 +1,73 @@
+# StoreKeeper
+
+StoreKeeper is an easy and flexible state management system for Flutter apps.
+
+## Store
+
+```dart
+class AppStore extends Store {
+  int count = 0;
+}
+```
+
+## Mutations
+
+```dart
+class Increment extends Mutation<AppStore> {
+  exec() => store.count++;
+}
+
+void increment() {
+  (StoreKeeper.store as AppStore).count++;
+  StoreKeeper.notify(increment);
+}
+```
+
+## Initialization
+
+```dart
+void main() {
+  runApp(StoreKeeper(
+    store: AppStore(),
+    child: MyApp(),
+  ));
+}
+```
+
+## Listening
+
+```dart
+StoreKeeper.update(context, on: [Increment, Multiply]);
+```
+
+## APIs
+
+`StoreKeeper.store`
+
+`StoreKeeper.update(BuildContext context, {List<Object> on})`
+
+`StoreKeeper.getStreamOf(Object mutation)`
+
+`StoreKeeper.notify(Object mutation)`
+
+`StoreKeeper.mutate(Object key, Function(Store) mutation)`
+
+## Widgets
+
+```dart
+StoreKeeper(
+    store: AppStore(),
+    child: MyApp(),
+)
+```
+
+```dart
+UpdateOn(
+  mutations: [increment, multiply],
+  builder: (_) => Text("Count: ${store.count}"),
+),
+```
+
 ## Simple Example
 
 ```dart
@@ -138,6 +208,8 @@ class MyApp extends StatelessWidget {
 }
 ```
 
+## Project structure
+
 ```shell
 mkdir lib/components
 mkdir lib/screens
@@ -155,15 +227,7 @@ touch lib/constants/index.dart
 touch lib/resources/index.dart
 touch lib/framework/index.dart
 touch lib/app.dart
-
-touch Makefile
 ```
-
-```make
-
-```
-
-## Project structure
 
 ```dart
 // app.dart
