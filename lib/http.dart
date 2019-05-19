@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'mutation.dart';
-import 'package:meta/meta.dart';
+import 'package:flutter/foundation.dart' show required;
 import 'dart:typed_data';
 
 class HTTPClient {
