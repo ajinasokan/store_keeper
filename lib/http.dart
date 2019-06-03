@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:convert';
+import 'dart:convert' as convert;
 import 'package:http/http.dart' as http;
 import 'mutation.dart';
 import 'package:flutter/foundation.dart' show required;
@@ -20,7 +20,7 @@ class HTTPClient {
       if (request.bodyFields != null)
         (_request as http.Request).bodyFields = request.bodyFields;
       if (request.bodyJSON != null) {
-        (_request as http.Request).body = json.encode(request.bodyJSON);
+        (_request as http.Request).body = convert.json.encode(request.bodyJSON);
         _request.headers['content-type'] = 'application/json';
       }
     } else {
@@ -33,12 +33,14 @@ class HTTPClient {
 
     var _response = await http.Response.fromStream(await _request.send());
 
-    return Response(
+    var res = Response(
       statusCode: _response.statusCode,
       headers: _response.headers,
-      decode: () => _response.body,
       body: _response.bodyBytes,
     );
+    res.decode = () => _response.body;
+
+    return res;
   }
 }
 
@@ -86,25 +88,24 @@ class Response {
     this.statusCode,
     this.headers,
     this.body,
-    this.decode,
   });
 
-  Map toMap() => json.decode(decode());
+  String text() => (decode ?? convert.utf8.decode)(body);
+  Map json() => convert.json.decode(text());
 
   void parse() {}
 }
 
 class HttpEffects<S extends Response, F extends Response>
     implements SideEffects<Request, Future<Response>> {
-  Future<void> future;
+  var _completer = Completer<void>();
+  Future<void> get future => _completer.future;
 
   @override
   Future<Response> branch(Request result) async {
     assert(result.success is S, "Provide correct success model to request.");
     assert(result.fail is F, "Provide correct fail model to request.");
 
-    var completer = Completer<void>();
-    future = completer.future;
     Response response;
 
     try {
@@ -114,7 +115,6 @@ class HttpEffects<S extends Response, F extends Response>
         result.success.statusCode = response.statusCode;
         result.success.body = response.body;
         result.success.headers = response.headers;
-        result.success.decode = response.decode;
         result.success.parse();
 
         success(result.success);
@@ -122,7 +122,6 @@ class HttpEffects<S extends Response, F extends Response>
         result.fail.statusCode = response.statusCode;
         result.fail.body = response.body;
         result.fail.headers = response.headers;
-        result.fail.decode = response.decode;
         result.fail.parse();
 
         fail(result.fail);
@@ -131,7 +130,7 @@ class HttpEffects<S extends Response, F extends Response>
       error(e, response);
     }
 
-    completer.complete();
+    _completer.complete();
     return response;
   }
 
