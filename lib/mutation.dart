@@ -11,33 +11,23 @@ abstract class Mutation<T extends Store> {
   List<MutationClosure> laterMutations = [];
 
   Mutation() {
-    store = Inventory.storeHandle;
+    () async {
+      store = Inventory.storeHandle;
 
-    // execute mutation
-    var result = exec();
-    if (result is Future) {
-      result.then((futureResult) {
-        StoreKeeper.notify(this.runtimeType);
+      dynamic result = exec();
+      if (result is Future) result = await result;
 
-        // and perform side effects
-        if (futureResult != null) {
-          if (this is SideEffects) (this as SideEffects).branch(result);
-        }
-
-        StoreKeeper.notify(this.runtimeType);
-        laterMutations.forEach((closure) => closure());
-      });
-    } else {
       StoreKeeper.notify(this.runtimeType);
 
-      // and perform side effects
-      if (result != null) {
-        if (this is SideEffects) (this as SideEffects).branch(result);
+      if (result != null && this is SideEffects) {
+        dynamic out = (this as SideEffects).branch(result);
+        if (out is Future) await out;
+
+        StoreKeeper.notify(this.runtimeType);
       }
 
-      StoreKeeper.notify(this.runtimeType);
       laterMutations.forEach((closure) => closure());
-    }
+    }();
   }
 
   void later(MutationClosure closure) {
@@ -47,6 +37,6 @@ abstract class Mutation<T extends Store> {
   dynamic exec();
 }
 
-abstract class SideEffects<IN, OUT> {
-  OUT branch(IN result);
+abstract class SideEffects<ON> {
+  dynamic branch(ON result);
 }

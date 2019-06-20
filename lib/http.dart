@@ -97,12 +97,12 @@ class Response {
 }
 
 class HttpEffects<S extends Response, F extends Response>
-    implements SideEffects<Request, Future<Response>> {
+    implements SideEffects<Request> {
   var _completer = Completer<void>();
   Future<void> get future => _completer.future;
 
   @override
-  Future<Response> branch(Request result) async {
+  Future<void> branch(Request result) async {
     assert(result.success is S, "Provide correct success model to request.");
     assert(result.fail is F, "Provide correct fail model to request.");
 
@@ -131,7 +131,6 @@ class HttpEffects<S extends Response, F extends Response>
     }
 
     _completer.complete();
-    return response;
   }
 
   void success(S response) {}

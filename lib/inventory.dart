@@ -11,7 +11,8 @@ abstract class Store {
 class Inventory {
   static Store storeHandle;
 
-  static GlobalKey<State> storeKeeperHandle = GlobalKey();
+  static StreamController<Null> storeUpdater =
+      StreamController<Null>.broadcast();
 
   static Map<int, StreamController<Null>> streams = {};
 }

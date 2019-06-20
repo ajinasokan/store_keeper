@@ -8,7 +8,7 @@ export 'inventory.dart' show Store;
 export 'mutation.dart';
 export 'update_on.dart';
 
-class StoreKeeper extends StatefulWidget {
+class StoreKeeper extends StatelessWidget {
   final Widget child;
 
   static Store get store => Inventory.storeHandle;
@@ -22,8 +22,7 @@ class StoreKeeper extends StatefulWidget {
     getStreamOf(mutation.hashCode).add(null);
 
     Mutation.recent.add(mutation.hashCode);
-    if (Inventory.storeKeeperHandle.currentState != null)
-      Inventory.storeKeeperHandle.currentState.setState(() {});
+    Inventory.storeUpdater.add(null);
   }
 
   static StreamController<Null> getStreamOf(Object mutation) {
@@ -39,18 +38,16 @@ class StoreKeeper extends StatefulWidget {
         ));
   }
 
-  StoreKeeper({Store store, this.child})
-      : super(key: Inventory.storeKeeperHandle);
-
-  @override
-  _StoreKeeperState createState() => _StoreKeeperState();
-}
-
-class _StoreKeeperState extends State<StoreKeeper> {
+  StoreKeeper({Store store, this.child});
   @override
   Widget build(BuildContext context) {
-    var recent = Set<int>()..addAll(Mutation.recent);
-    Mutation.recent.clear();
-    return StoreKeeperModel(child: widget.child, recent: recent);
+    return StreamBuilder(
+      stream: Inventory.storeUpdater.stream,
+      builder: (ctx, _) {
+        var recent = Set<int>()..addAll(Mutation.recent);
+        Mutation.recent.clear();
+        return StoreKeeperModel(child: child, recent: recent);
+      },
+    );
   }
 }
