@@ -230,3 +230,47 @@ class MyApp extends StatelessWidget {
   }
 }
 ```
+
+## HTTP Requests
+
+```dart
+class FetchNews extends Mutation<AppStore> with HttpEffects<Response, Response> {
+  int page;
+
+  FetchNews({this.page = 1});
+
+  exec() {
+    return Request(
+      url: "https://website.news/list.json",
+      params: {
+        "page": page.toString(),
+      },
+      success: Response(),
+      fail: Response(),
+    );
+  }
+
+  success(Response response) {
+    print(response.json());
+  }
+
+  fail(Response response) {
+    print(response.text());
+  }
+
+  error(Error error, Response response) {
+    print(error.stackTrace);
+  }
+}
+```
+
+Create an abstract class like below to make the mutation more readable.
+
+```dart
+abstract class APIRequest<S extends Response, F extends Response>
+    extends Mutation<AppStore> with HttpEffects<S, F> {}
+
+class FetchNews extends APIRequest<Response, Response> {
+  ...
+}
+```
