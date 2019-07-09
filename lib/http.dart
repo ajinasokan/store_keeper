@@ -38,7 +38,7 @@ class HTTPClient {
       headers: _response.headers,
       body: _response.bodyBytes,
     );
-    res.decode = () => _response.body;
+    res.decode = (_) => _response.body;
 
     return res;
   }
@@ -121,6 +121,7 @@ class HttpEffects<S extends Response, F extends Response>
         result.success.statusCode = response.statusCode;
         result.success.body = response.body;
         result.success.headers = response.headers;
+        result.success.decode ??= response.decode;
         result.success.parse();
 
         success(result.success);
@@ -128,6 +129,7 @@ class HttpEffects<S extends Response, F extends Response>
         result.fail.statusCode = response.statusCode;
         result.fail.body = response.body;
         result.fail.headers = response.headers;
+        result.fail.decode ??= response.decode;
         result.fail.parse();
 
         fail(result.fail);
