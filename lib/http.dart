@@ -82,7 +82,7 @@ class Response {
   int statusCode;
   Uint8List body;
   Map<String, String> headers;
-  String Function() decode;
+  String Function(List<int> codeUnits) decode;
 
   Response({
     this.statusCode,
@@ -90,7 +90,13 @@ class Response {
     this.body,
   });
 
-  String text() => (decode ?? convert.utf8.decode)(body);
+  String text() {
+    if (decode != null)
+      return decode(body);
+    else
+      convert.utf8.decode(body);
+  }
+
   Map json() => convert.json.decode(text());
 
   void parse() {}
@@ -109,7 +115,7 @@ class HttpEffects<S extends Response, F extends Response>
     Response response;
 
     try {
-      Response response = await HTTPClient.send(result);
+      response = await HTTPClient.send(result);
 
       if (response.statusCode == 200) {
         result.success.statusCode = response.statusCode;
