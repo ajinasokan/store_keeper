@@ -94,7 +94,7 @@ class Response {
     if (decode != null)
       return decode(body);
     else
-      convert.utf8.decode(body);
+      return convert.utf8.decode(body);
   }
 
   Map json() => convert.json.decode(text());
@@ -134,8 +134,8 @@ class HttpEffects<S extends Response, F extends Response>
 
         fail(result.fail);
       }
-    } on Error catch (e) {
-      error(e, response);
+    } catch (e, s) {
+      exception(e, s, response);
     }
 
     _completer.complete();
@@ -143,5 +143,5 @@ class HttpEffects<S extends Response, F extends Response>
 
   void success(S response) {}
   void fail(F response) {}
-  void error(Error error, Response response) {}
+  void exception(Exception e, StackTrace s, Response r) {}
 }
