@@ -11,8 +11,7 @@ abstract class Store {
 class Inventory {
   static Store storeHandle;
 
-  static StreamController<Null> storeUpdater =
-      StreamController<Null>.broadcast();
+  static final storeUpdater = StreamController<int>.broadcast();
 
   static Map<int, StreamController<Null>> streams = {};
 }

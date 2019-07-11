@@ -11,6 +11,8 @@ export 'update_on.dart';
 class StoreKeeper extends StatelessWidget {
   final Widget child;
 
+  static Stream get updates => Inventory.storeUpdater.stream;
+
   static Store get store => Inventory.storeHandle;
 
   static void mutate(Object key, Function(Store) mutation) {
@@ -22,7 +24,7 @@ class StoreKeeper extends StatelessWidget {
     getStreamOf(mutation.hashCode).add(null);
 
     Mutation.recent.add(mutation.hashCode);
-    Inventory.storeUpdater.add(null);
+    Inventory.storeUpdater.add(mutation.hashCode);
   }
 
   static StreamController<Null> getStreamOf(Object mutation) {
@@ -39,6 +41,7 @@ class StoreKeeper extends StatelessWidget {
   }
 
   StoreKeeper({Store store, this.child});
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
