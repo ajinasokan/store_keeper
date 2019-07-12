@@ -143,5 +143,5 @@ class HttpEffects<S extends Response, F extends Response>
 
   void success(S response) {}
   void fail(F response) {}
-  void exception(Exception e, StackTrace s, Response r) {}
+  void exception(dynamic e, StackTrace s, Response r) {}
 }
