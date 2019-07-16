@@ -5,7 +5,13 @@ import 'mutation.dart';
 import 'package:flutter/foundation.dart' show required;
 import 'dart:typed_data';
 
+typedef void RequestInterceptor(Request request);
+typedef void ResponseInterceptor(Response response);
+
 class HTTPClient {
+  static RequestInterceptor onBeforeRequest = (_) {};
+  static ResponseInterceptor onAfterResponse = (_) {};
+
   static Future<Response> send(Request request) async {
     http.BaseRequest _request;
 
@@ -31,6 +37,8 @@ class HTTPClient {
     }
     _request.headers.addAll(request.headers);
 
+    onBeforeRequest(request);
+
     var _response = await http.Response.fromStream(await _request.send());
 
     var res = Response(
@@ -39,6 +47,8 @@ class HTTPClient {
       body: _response.bodyBytes,
     );
     res.decode = (_) => _response.body;
+
+    onAfterResponse(res);
 
     return res;
   }
