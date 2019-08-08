@@ -27,7 +27,8 @@ abstract class Mutation<T extends Store> {
       }
 
       laterMutations.forEach((closure) => closure());
-    }();
+    }()
+        .catchError((e, s) => exception(e, s));
   }
 
   void later(MutationClosure closure) {
@@ -35,6 +36,11 @@ abstract class Mutation<T extends Store> {
   }
 
   dynamic exec();
+
+  void exception(dynamic e, StackTrace s) {
+    print(e);
+    print(s);
+  }
 }
 
 abstract class SideEffects<ON> {

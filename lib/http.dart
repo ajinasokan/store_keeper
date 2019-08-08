@@ -116,40 +116,36 @@ class Response {
   void parse() {}
 }
 
-class HttpEffects<S extends Response, F extends Response>
+abstract class HttpEffects<S extends Response, F extends Response>
     implements SideEffects<Request> {
   var _completer = Completer<void>();
   Future<void> get future => _completer.future;
+
+  Response response;
 
   @override
   Future<void> branch(Request result) async {
     assert(result.success is S, "Provide correct success model to request.");
     assert(result.fail is F, "Provide correct fail model to request.");
 
-    Response response;
+    response = await HTTPClient.send(result);
 
-    try {
-      response = await HTTPClient.send(result);
+    if (response.statusCode == 200) {
+      result.success.statusCode = response.statusCode;
+      result.success.body = response.body;
+      result.success.headers = response.headers;
+      result.success.decode ??= response.decode;
+      result.success.parse();
 
-      if (response.statusCode == 200) {
-        result.success.statusCode = response.statusCode;
-        result.success.body = response.body;
-        result.success.headers = response.headers;
-        result.success.decode ??= response.decode;
-        result.success.parse();
+      success(result.success);
+    } else {
+      result.fail.statusCode = response.statusCode;
+      result.fail.body = response.body;
+      result.fail.headers = response.headers;
+      result.fail.decode ??= response.decode;
+      result.fail.parse();
 
-        success(result.success);
-      } else {
-        result.fail.statusCode = response.statusCode;
-        result.fail.body = response.body;
-        result.fail.headers = response.headers;
-        result.fail.decode ??= response.decode;
-        result.fail.parse();
-
-        fail(result.fail);
-      }
-    } catch (e, s) {
-      exception(e, s, response);
+      fail(result.fail);
     }
 
     _completer.complete();
@@ -157,5 +153,4 @@ class HttpEffects<S extends Response, F extends Response>
 
   void success(S response) {}
   void fail(F response) {}
-  void exception(dynamic e, StackTrace s, Response r) {}
 }
