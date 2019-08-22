@@ -5,14 +5,22 @@ import 'mutation.dart';
 import 'package:flutter/foundation.dart' show required;
 import 'dart:typed_data';
 
-typedef Future<void> RequestInterceptor(Request request);
-typedef Future<void> ResponseInterceptor(Response response);
+abstract class HTTPInterceptor {
+  Future beforeRequest(Request request);
+  Future afterResponse(Response response);
+}
 
 class HTTPClient {
-  static RequestInterceptor onBeforeRequest = (_) {};
-  static ResponseInterceptor onAfterResponse = (_) {};
+  static List<HTTPInterceptor> interceptors = [];
 
   static Future<Response> send(Request request) async {
+    // process interceptors
+    for (var i in interceptors) {
+      var _fut = i.beforeRequest(request);
+      if (_fut != null) await _fut;
+    }
+
+    // make actual request
     http.BaseRequest _request;
 
     var uri = Uri.parse(request.url).replace(queryParameters: request.params);
@@ -37,9 +45,6 @@ class HTTPClient {
     }
     _request.headers.addAll(request.headers);
 
-    var _fut = onBeforeRequest(request);
-    if (_fut != null) await _fut;
-
     var _response = await http.Response.fromStream(await _request.send());
 
     var res = Response(
@@ -47,11 +52,13 @@ class HTTPClient {
       headers: _response.headers,
       body: _response.bodyBytes,
     );
-    res.decode = (_) => _response.body;
     res.request = request;
 
-    _fut = onAfterResponse(res);
-    if (_fut != null) await _fut;
+    // process interceptors
+    for (var i in interceptors) {
+      var _fut = i.afterResponse(res);
+      if (_fut != null) await _fut;
+    }
 
     return res;
   }
@@ -69,6 +76,7 @@ class Request {
   List<http.MultipartFile> bodyFiles;
   Response success;
   Response fail;
+  Map<String, dynamic> meta;
 
   Request({
     this.method,
@@ -82,12 +90,14 @@ class Request {
     this.bodyJSON,
     this.success,
     this.fail,
+    this.meta,
   }) {
     method ??= "GET";
     params ??= {};
     headers ??= {};
     success ??= Response();
     fail ??= Response();
+    meta ??= {};
   }
 }
 
