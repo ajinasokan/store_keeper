@@ -31,11 +31,13 @@ class HTTPClient {
       if (request.body != null) (_request as http.Request).body = request.body;
       if (request.bodyBytes != null)
         (_request as http.Request).bodyBytes = request.bodyBytes;
-      if (request.bodyFields != null)
+      if (request.bodyFields != null) {
         (_request as http.Request).bodyFields = request.bodyFields;
+        _request.headers['content-type'] = 'application/x-www-form-urlencoded; charset=utf-8';
+      }
       if (request.bodyJSON != null) {
         (_request as http.Request).body = convert.json.encode(request.bodyJSON);
-        _request.headers['content-type'] = 'application/json';
+        _request.headers['content-type'] = 'application/json; charset=utf-8';
       }
     } else {
       _request = http.MultipartRequest(request.method, uri);
