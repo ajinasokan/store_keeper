@@ -33,7 +33,8 @@ class HTTPClient {
         (_request as http.Request).bodyBytes = request.bodyBytes;
       if (request.bodyFields != null) {
         (_request as http.Request).bodyFields = request.bodyFields;
-        _request.headers['content-type'] = 'application/x-www-form-urlencoded; charset=utf-8';
+        _request.headers['content-type'] =
+            'application/x-www-form-urlencoded; charset=utf-8';
       }
       if (request.bodyJSON != null) {
         (_request as http.Request).body = convert.json.encode(request.bodyJSON);
@@ -147,6 +148,7 @@ abstract class HttpEffects<S extends Response, F extends Response>
       result.success.body = response.body;
       result.success.headers = response.headers;
       result.success.decode ??= response.decode;
+      result.success.request = result;
       result.success.parse();
 
       success(result.success);
@@ -155,6 +157,7 @@ abstract class HttpEffects<S extends Response, F extends Response>
       result.fail.body = response.body;
       result.fail.headers = response.headers;
       result.fail.decode ??= response.decode;
+      result.fail.request = result;
       result.fail.parse();
 
       fail(result.fail);
