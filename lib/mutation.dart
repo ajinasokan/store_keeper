@@ -28,7 +28,10 @@ abstract class Mutation<T extends Store> {
 
       laterMutations.forEach((closure) => closure());
     }()
-        .catchError((e, s) => exception(e, s));
+        .catchError((e, s) {
+      exception(e, s);
+      StoreKeeper.notify(this.runtimeType);
+    });
   }
 
   void later(MutationClosure closure) {
