@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:convert' as convert;
 import 'package:http/http.dart' as http;
 import 'mutation.dart';
@@ -11,6 +12,14 @@ abstract class HTTPInterceptor {
 }
 
 class HTTPClient {
+  // timeout to get a tcp connection with server
+  static int connectTimeout = 8;
+  // timeout to get first byte after the request. only for GET
+  static int writeTimeout = 5;
+  // timeout to get complete response from server. only for GET
+  static int readTimeout = 20;
+
+  static HttpClient client = HttpClient();
   static List<HTTPInterceptor> interceptors = [];
 
   static Future<Response> send(Request request) async {
@@ -48,12 +57,65 @@ class HTTPClient {
     }
     _request.headers.addAll(request.headers);
 
-    var _response = await http.Response.fromStream(await _request.send());
+    // start network request
+    // read and write timeouts are only for GET requests
+    // because others should not get cancelled mid flight
+
+    // connection timeout
+    var httpClientReq =
+        await client.openUrl(_request.method, _request.url).timeout(
+      Duration(seconds: request.connectTimeout),
+      onTimeout: () {
+        throw TimeoutException("Connection timeout. Retry.");
+      },
+    );
+
+    // add all headers
+    _request.headers.forEach((key, val) {
+      httpClientReq.headers.add(key, val);
+    });
+
+    // convert body to byte stream
+    var bodyStream = _request.finalize();
+    httpClientReq.add((await bodyStream.toBytes()).toList());
+
+    // write timeout
+    var httpClientRes = await (_request.method == "GET"
+        ? httpClientReq.close().timeout(
+            Duration(seconds: request.writeTimeout),
+            onTimeout: () {
+              throw TimeoutException("Network error. No response.");
+            },
+          )
+        : httpClientReq.close());
+
+    // convert byte stream to byte list
+
+    // read timeout
+    List<List<int>> packets = await (_request.method == "GET"
+        ? httpClientRes.toList().timeout(
+            Duration(seconds: request.readTimeout),
+            onTimeout: () {
+              throw TimeoutException("Connection too slow. Retry.");
+            },
+          )
+        : httpClientRes.toList());
+
+    List<int> bytes = [];
+    packets.forEach((buff) => bytes.addAll(buff));
+
+    // join header values
+    Map<String, String> resHeaders = {};
+    httpClientRes.headers.forEach((key, values) {
+      resHeaders[key] = values.join(",");
+    });
+
+    // end network request
 
     var res = Response(
-      statusCode: _response.statusCode,
-      headers: _response.headers,
-      body: _response.bodyBytes,
+      statusCode: httpClientRes.statusCode,
+      headers: resHeaders,
+      body: bytes.toList(),
     );
     res.request = request;
 
@@ -80,6 +142,9 @@ class Request {
   Response success;
   Response fail;
   Map<String, dynamic> meta;
+  int connectTimeout;
+  int readTimeout;
+  int writeTimeout;
 
   Request({
     this.method,
@@ -101,13 +166,16 @@ class Request {
     success ??= Response();
     fail ??= Response();
     meta ??= {};
+    connectTimeout ??= HTTPClient.connectTimeout;
+    readTimeout ??= HTTPClient.readTimeout;
+    writeTimeout ??= HTTPClient.writeTimeout;
   }
 }
 
 class Response {
   Request request;
   int statusCode;
-  Uint8List body;
+  List<int> body;
   Map<String, String> headers;
   String Function(List<int> codeUnits) decode;
 
