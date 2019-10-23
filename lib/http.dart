@@ -209,7 +209,12 @@ abstract class HttpEffects<S extends Response, F extends Response>
     assert(result.success is S, "Provide correct success model to request.");
     assert(result.fail is F, "Provide correct fail model to request.");
 
-    response = await HTTPClient.send(result);
+    try {
+      response = await HTTPClient.send(result);
+    } catch (e) {
+      _completer.complete();
+      throw e;
+    }
 
     if (response.statusCode == 200) {
       result.success.statusCode = response.statusCode;
