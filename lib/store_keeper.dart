@@ -1,19 +1,26 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'inventory.dart';
 import 'inherited_model.dart';
 import 'mutation.dart';
 
-export 'inventory.dart' show Store;
 export 'mutation.dart';
 export 'update_on.dart';
+
+abstract class Store {
+  Store() {
+    StoreKeeper._store = this;
+  }
+}
 
 class StoreKeeper extends StatelessWidget {
   final Widget child;
 
-  static Stream get updates => Inventory.storeUpdater.stream;
+  static final _events = StreamController<int>.broadcast();
 
-  static Store get store => Inventory.storeHandle;
+  static Stream get events => _events.stream;
+
+  static Store _store;
+  static Store get store => _store;
 
   static void mutate(Object key, Function(Store) mutation) {
     mutation(StoreKeeper.store);
@@ -21,23 +28,20 @@ class StoreKeeper extends StatelessWidget {
   }
 
   static void notify(Object mutation) {
-    getStreamOf(mutation.hashCode).add(null);
-
     Mutation.recent.add(mutation.hashCode);
-    Inventory.storeUpdater.add(mutation.hashCode);
+    _events.add(mutation.hashCode);
   }
 
-  static StreamController<Null> getStreamOf(Object mutation) {
-    if (!Inventory.streams.containsKey(mutation.hashCode))
-      Inventory.streams[mutation.hashCode] = StreamController<Null>.broadcast();
-    return Inventory.streams[mutation.hashCode];
+  static Stream<int> getStreamOf(Object mutation) {
+    return _events.stream.where((e) => e == mutation.hashCode);
   }
 
   static void update(BuildContext context, {List<Object> on}) {
-    on.forEach((m) => context.inheritFromWidgetOfExactType(
-          StoreKeeperModel,
-          aspect: m.hashCode,
-        ));
+    on.forEach(
+      (m) => context.dependOnInheritedWidgetOfExactType<StoreKeeperModel>(
+        aspect: m.hashCode,
+      ),
+    );
   }
 
   StoreKeeper({Store store, this.child});
@@ -45,7 +49,7 @@ class StoreKeeper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: Inventory.storeUpdater.stream,
+      stream: _events.stream,
       builder: (ctx, _) {
         var recent = Set<int>()..addAll(Mutation.recent);
         Mutation.recent.clear();

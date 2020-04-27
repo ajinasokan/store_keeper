@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:async/async.dart' show StreamGroup;
+import 'dart:async';
 import 'store_keeper.dart';
 
 class UpdateOn<T> extends StatelessWidget {
@@ -10,12 +10,15 @@ class UpdateOn<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Stream<Null> stream = mutations != null
-        ? StreamGroup.merge(
-            mutations.map((m) => StoreKeeper.getStreamOf(m.hashCode).stream))
-        : StoreKeeper.getStreamOf(T.hashCode).stream;
+    Set<int> mutCodes = mutations.map((i) => i.hashCode).toSet();
 
-    return StreamBuilder<Null>(
+    Stream<int> stream;
+    if (mutations != null)
+      stream = StoreKeeper.events.where((e) => mutCodes.contains(e));
+    else
+      stream = StoreKeeper.getStreamOf(T);
+
+    return StreamBuilder<int>(
       stream: stream,
       builder: (BuildContext context, _) => builder(context),
     );

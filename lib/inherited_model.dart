@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 
 class StoreKeeperModel extends InheritedModel<Object> {

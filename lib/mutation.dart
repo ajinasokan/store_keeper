@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'inventory.dart';
 import 'store_keeper.dart';
 
 typedef Mutation MutationClosure();
@@ -11,8 +10,12 @@ abstract class Mutation<T extends Store> {
   List<MutationClosure> laterMutations = [];
 
   Mutation() {
-    () async {
-      store = Inventory.storeHandle;
+    _run();
+  }
+
+  void _run() async {
+    try {
+      store = StoreKeeper.store;
 
       dynamic result = exec();
       if (result is Future) result = await result;
@@ -27,11 +30,10 @@ abstract class Mutation<T extends Store> {
       }
 
       laterMutations.forEach((closure) => closure());
-    }()
-        .catchError((e, s) {
+    } catch (e, s) {
       exception(e, s);
       StoreKeeper.notify(this.runtimeType);
-    });
+    }
   }
 
   void later(MutationClosure closure) {
