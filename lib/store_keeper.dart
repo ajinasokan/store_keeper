@@ -17,7 +17,7 @@ class StoreKeeper extends StatelessWidget {
 
   static final _events = StreamController<int>.broadcast();
 
-  static Stream get events => _events.stream;
+  static Stream<int> get events => _events.stream;
 
   static Store _store;
   static Store get store => _store;
