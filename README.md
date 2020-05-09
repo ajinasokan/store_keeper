@@ -85,7 +85,7 @@ Notifies StoreKeeper that the mutation has performed. This will internally notif
 
 `StoreKeeper.mutate(Object key, Function(Store) mutation)`
 
-An inline method to mutate a state. Key defines the name of the mutation. Use this API like this:
+An inline method to mutate a state. Key defines the name of the mutation. Example usage:
 
 ```dart
 StoreKeeper.mutate("increment", (AppStore store) => store.count++);
@@ -162,75 +162,6 @@ class MyApp extends StatelessWidget {
 }
 ```
 
-## Mutations using functions
-
-```dart
-import 'package:flutter/material.dart';
-import 'package:store_keeper/store_keeper.dart';
-
-// Build store and make it part of app
-void main() {
-  runApp(StoreKeeper(
-    store: AppStore(),
-    child: MyApp(),
-  ));
-}
-
-// Store definition
-class AppStore extends Store {
-  int count = 0;
-}
-
-// Mutations
-void increment() {
-  (StoreKeeper.store as AppStore).count++;
-  StoreKeeper.notify(increment);
-}
-
-void multiply({int by}) {
-  (StoreKeeper.store as AppStore).count *= by;
-  StoreKeeper.notify(multiply);
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    // Define when this widget should re render
-    StoreKeeper.update(context, on: [increment, multiply]);
-
-    // Get access to the store
-    var store = StoreKeeper.store as AppStore;
-
-    return MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text("Count: ${store.count}"),
-              RaisedButton(
-                child: Text("Increment"),
-                onPressed: () {
-                  // Invoke mutation
-                  increment();
-                },
-              ),
-              RaisedButton(
-                child: Text("Decrement"),
-                onPressed: () {
-                  // Invoke mutation with params
-                  multiply(by: 2);
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-```
-
 ## HTTP Requests
 
 ```dart
@@ -258,8 +189,9 @@ class FetchNews extends Mutation<AppStore> with HttpEffects<Response, Response> 
     print(response.text());
   }
 
-  error(Error error, Response response) {
-    print(error.stackTrace);
+  exception(dynamic e, StackTrace s) {
+    print(e);
+    print(s);
   }
 }
 ```
