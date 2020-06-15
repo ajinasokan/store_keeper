@@ -1,11 +1,8 @@
-import 'dart:async';
-import 'store_keeper.dart';
+part of 'store_keeper.dart';
 
 typedef Mutation MutationClosure();
 
 abstract class Mutation<T extends Store> {
-  static Set<int> recent = Set<int>();
-
   T store;
   List<MutationClosure> laterMutations = [];
 

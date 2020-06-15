@@ -1,59 +1,52 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'inherited_model.dart';
-import 'mutation.dart';
 
-export 'mutation.dart';
-export 'update_on.dart';
+part 'mutation.dart';
+part 'inherited_model.dart';
 
-abstract class Store {
-  Store() {
-    StoreKeeper._store = this;
-  }
-}
+abstract class Store {}
 
 class StoreKeeper extends StatelessWidget {
   final Widget child;
 
-  static final _events = StreamController<int>.broadcast();
+  static final _events = StreamController<Type>.broadcast();
 
-  static Stream<int> get events => _events.stream;
+  static Stream<Type> get events => _events.stream;
 
   static Store _store;
   static Store get store => _store;
 
-  static void mutate(Object key, Function(Store) mutation) {
-    mutation(StoreKeeper.store);
-    notify(key);
+  static Set<Type> _buffer = Set<Type>();
+  static void notify(Type mutation) {
+    _buffer.add(mutation);
+    _events.add(mutation);
   }
 
-  static void notify(Object mutation) {
-    Mutation.recent.add(mutation.hashCode);
-    _events.add(mutation.hashCode);
+  static Stream<Type> streamOf(Type mutation) {
+    return _events.stream.where((e) => e == mutation);
   }
 
-  static Stream<int> getStreamOf(Object mutation) {
-    return _events.stream.where((e) => e == mutation.hashCode);
-  }
-
-  static void update(BuildContext context, {List<Object> on}) {
-    on.forEach(
-      (m) => context.dependOnInheritedWidgetOfExactType<StoreKeeperModel>(
-        aspect: m.hashCode,
+  static void listen(BuildContext context, {List<Type> to}) {
+    to.forEach(
+      (m) => context.dependOnInheritedWidgetOfExactType<_StoreKeeperModel>(
+        aspect: m,
       ),
     );
   }
 
-  StoreKeeper({Store store, this.child});
+  StoreKeeper({Store store, this.child}) {
+    assert(store != null, "Uninitialized store");
+    StoreKeeper._store = store;
+  }
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream: _events.stream,
       builder: (ctx, _) {
-        var recent = Set<int>()..addAll(Mutation.recent);
-        Mutation.recent.clear();
-        return StoreKeeperModel(child: child, recent: recent);
+        final clone = Set<Type>()..addAll(_buffer);
+        _buffer.clear();
+        return _StoreKeeperModel(child: child, recent: clone);
       },
     );
   }

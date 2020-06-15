@@ -1,15 +1,17 @@
-import 'package:flutter/material.dart';
+part of 'store_keeper.dart';
 
-class StoreKeeperModel extends InheritedModel<Object> {
-  final Set<int> recent;
+class _StoreKeeperModel extends InheritedModel<Type> {
+  final Set<Type> recent;
 
-  StoreKeeperModel({Widget child, this.recent}) : super(child: child);
-
-  @override
-  bool updateShouldNotify(InheritedWidget oldWidget) => true;
+  _StoreKeeperModel({Widget child, this.recent}) : super(child: child);
 
   @override
-  bool updateShouldNotifyDependent(_, Set<Object> deps) {
-    return deps.any((d) => recent.contains(d.hashCode));
+  bool updateShouldNotify(_) => true;
+
+  @override
+  bool updateShouldNotifyDependent(_, Set<Type> deps) {
+    // check if there is an event happened for which
+    // dependent was subscribed
+    return deps.intersection(recent).isNotEmpty;
   }
 }

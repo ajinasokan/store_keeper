@@ -66,7 +66,7 @@ void main() {
 
     test('stream of mutation events', () {
       final store = TestStore();
-      final stream = StoreKeeper.getStreamOf(Increment);
+      final stream = StoreKeeper.streamOf(Increment);
       expectLater(stream.first, completion(equals((Increment).hashCode)));
       Increment();
     });
