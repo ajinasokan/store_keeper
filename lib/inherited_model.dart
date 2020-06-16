@@ -1,5 +1,7 @@
 part of 'store_keeper.dart';
 
+/// [_StoreKeeperModel] tracks the listener widgets and notify them when
+/// their corresponding mutation executes
 class _StoreKeeperModel extends InheritedModel<Type> {
   final Set<Type> recent;
 

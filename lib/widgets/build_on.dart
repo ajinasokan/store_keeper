@@ -1,11 +1,13 @@
 import 'package:flutter/widgets.dart';
 import 'package:store_keeper/store_keeper.dart';
 
-class RebuildOn extends StatelessWidget {
+/// [BuildOn] is a stream builder like widget that accepts
+/// mutations and rebuilds after their execution.
+class BuildOn extends StatelessWidget {
   final WidgetBuilder builder;
   final Set<Type> mutations;
 
-  RebuildOn({
+  BuildOn({
     @required this.builder,
     @required this.mutations,
   }) : assert(mutations != null);
