@@ -51,40 +51,52 @@ class ExceptionMut extends Mutation<TestStore> {
 void main() {
   group("event management", () {
     test('incrementing count', () {
-      final store = TestStore();
+      StoreKeeper(store: TestStore(), child: null);
+      final store = StoreKeeper.store as TestStore;
+
       expect(store.count, 0);
       Increment();
       expect(store.count, 1);
     });
 
     test('stream of events', () {
-      final store = TestStore();
+      StoreKeeper(store: TestStore(), child: null);
+      final store = StoreKeeper.store as TestStore;
+
       final stream = StoreKeeper.events;
-      expectLater(stream.first, completion(equals((Increment).hashCode)));
+      expectLater(stream.first, completion(equals(Increment)));
       Increment();
     });
 
     test('stream of mutation events', () {
-      final store = TestStore();
+      StoreKeeper(store: TestStore(), child: null);
+      final store = StoreKeeper.store as TestStore;
+
       final stream = StoreKeeper.streamOf(Increment);
-      expectLater(stream.first, completion(equals((Increment).hashCode)));
+      expectLater(stream.first, completion(equals(Increment)));
       Increment();
     });
 
     test('exception catching', () {
-      final store = TestStore();
+      StoreKeeper(store: TestStore(), child: null);
+      final store = StoreKeeper.store as TestStore;
+
       final em = ExceptionMut();
       expect(em.caught, true);
     });
 
     test('lazy execution', () {
-      final store = TestStore();
+      StoreKeeper(store: TestStore(), child: null);
+      final store = StoreKeeper.store as TestStore;
+
       IncrementLater();
       expect(store.count, 2);
     });
 
     test('async execution', () async {
-      final store = TestStore();
+      StoreKeeper(store: TestStore(), child: null);
+      final store = StoreKeeper.store as TestStore;
+
       final mut = AsyncIncrement();
       expect(store.count, 0);
       await mut.comp.future;

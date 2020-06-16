@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:store_keeper/store_keeper.dart';
-import 'package:store_keeper/widgets/update_on.dart';
+import 'package:store_keeper/widgets/build_on.dart';
 
 void main() {
   testWidgets('increment number in text', (WidgetTester tester) async {
@@ -65,7 +65,7 @@ class ExampleBuilderWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final store = StoreKeeper.store as TestStore;
-    return RebuildOn(
+    return BuildOn(
       mutations: {Increment},
       builder: (_) => Text("count is ${store.count}"),
     );
