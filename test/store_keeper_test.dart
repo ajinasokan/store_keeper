@@ -10,16 +10,16 @@ class TestStore extends Store {
 
 class Increment extends Mutation<TestStore> {
   @override
-  exec() {
+  void exec() {
     store.count++;
   }
 }
 
 class AsyncIncrement extends Mutation<TestStore> {
-  final comp = Completer();
+  final Completer comp = Completer();
 
   @override
-  exec() async {
+  void exec() async {
     await Future.delayed(Duration(milliseconds: 10));
     store.count++;
     comp.complete();
@@ -28,7 +28,7 @@ class AsyncIncrement extends Mutation<TestStore> {
 
 class IncrementLater extends Mutation<TestStore> {
   @override
-  exec() {
+  void exec() {
     later(() => Increment());
     later(() => Increment());
   }
@@ -38,12 +38,12 @@ class ExceptionMut extends Mutation<TestStore> {
   bool caught = false;
 
   @override
-  exec() {
+  void exec() {
     throw Exception();
   }
 
   @override
-  void exception(e, StackTrace s) {
+  void exception(dynamic e, StackTrace s) {
     caught = true;
   }
 }
@@ -61,7 +61,6 @@ void main() {
 
     test('stream of events', () {
       StoreKeeper(store: TestStore(), child: null);
-      final store = StoreKeeper.store as TestStore;
 
       final stream = StoreKeeper.events;
       expectLater(stream.first, completion(equals(Increment)));
@@ -70,7 +69,6 @@ void main() {
 
     test('stream of mutation events', () {
       StoreKeeper(store: TestStore(), child: null);
-      final store = StoreKeeper.store as TestStore;
 
       final stream = StoreKeeper.streamOf(Increment);
       expectLater(stream.first, completion(equals(Increment)));
@@ -79,7 +77,6 @@ void main() {
 
     test('exception catching', () {
       StoreKeeper(store: TestStore(), child: null);
-      final store = StoreKeeper.store as TestStore;
 
       final em = ExceptionMut();
       expect(em.caught, true);

@@ -1,12 +1,10 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:store_keeper/store_keeper.dart';
-import 'package:store_keeper/widgets/build_on.dart';
 
 void main() {
-  testWidgets('increment number in text', (WidgetTester tester) async {
+  testWidgets('increment number in text', (tester) async {
     // Create the widget by telling the tester to build it.
     await tester.pumpWidget(
       MaterialApp(
@@ -23,7 +21,7 @@ void main() {
     expect(find.text("count is 1"), findsOneWidget);
   });
 
-  testWidgets('UpdateOn widget', (WidgetTester tester) async {
+  testWidgets('UpdateOn widget', (tester) async {
     // Create the widget by telling the tester to build it.
     await tester.pumpWidget(
       MaterialApp(
@@ -47,7 +45,7 @@ class TestStore extends Store {
 
 class Increment extends Mutation<TestStore> {
   @override
-  exec() {
+  void exec() {
     store.count++;
   }
 }
