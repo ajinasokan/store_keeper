@@ -21,7 +21,7 @@ abstract class Mutation<T extends Store> {
   /// [_run] executes mutation.
   void _run() async {
     // Execute all the interceptors. If returns false cancel mutation.
-    for (var i in StoreKeeper.interceptors) {
+    for (var i in StoreKeeper._interceptors) {
       if (!i.beforeMutation(this)) return;
     }
 
@@ -61,7 +61,7 @@ abstract class Mutation<T extends Store> {
     }
 
     // Execute all the interceptors.
-    for (var i in StoreKeeper.interceptors) {
+    for (var i in StoreKeeper._interceptors) {
       i.afterMutation(this);
     }
   }
@@ -99,7 +99,7 @@ mixin SideEffects<ON> {
 }
 
 /// Implementation of this class can be used to act before or after
-/// a mutation execution
+/// a mutation execution.
 abstract class Interceptor {
   /// Function called before mutation is executed.
   /// Execution can be cancelled by returning false.

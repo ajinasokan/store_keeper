@@ -15,7 +15,7 @@ class StoreKeeper extends StatelessWidget {
   final Widget child;
 
   /// List of all mutation interceptors
-  static List<Interceptor> interceptors;
+  static List<Interceptor> _interceptors;
 
   /// This controller serves as the event broadcasting bus
   /// for the app.
@@ -65,12 +65,13 @@ class StoreKeeper extends StatelessWidget {
   StoreKeeper({
     @required Store store,
     @required this.child,
-    interceptors = const [],
+    List<Interceptor> interceptors = const [],
   }) {
     assert(store != null, "Uninitialized store");
     assert(interceptors != null, "Interceptor list can't be null");
 
     StoreKeeper._store = store;
+    StoreKeeper._interceptors = interceptors;
   }
 
   @override
