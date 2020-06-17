@@ -5,9 +5,9 @@ import '../store_keeper.dart';
 /// Function signature for the callback with context.
 typedef ContextCallback = void Function(BuildContext context);
 
-/// [NotifyOn] executes the provided callbacks with context on execution
-/// of the mutations. Useful to show [SnackBar] or navigate
-/// to a different route after a mutation
+/// Helper widget that executes the provided callbacks with context
+/// on execution of the mutations. Useful to show SnackBar or navigate
+/// to a different route after a mutation.
 class NotifyOn extends StatefulWidget {
   /// Optional child widget
   final Widget child;
