@@ -15,6 +15,17 @@ class Increment extends Mutation<TestStore> {
   }
 }
 
+class IncrementBy extends Mutation<TestStore> {
+  int by;
+
+  IncrementBy({this.by = 1});
+
+  @override
+  void exec() {
+    store.count += by;
+  }
+}
+
 class AsyncIncrement extends Mutation<TestStore> {
   final Completer comp = Completer();
 
@@ -46,6 +57,36 @@ class ExceptionMut extends Mutation<TestStore> {
   void exception(dynamic e, StackTrace s) {
     caught = true;
   }
+}
+
+class MutationCounter extends Interceptor {
+  int finished = 0;
+
+  @override
+  bool beforeMutation(Mutation<Store> mutation) {
+    return true;
+  }
+
+  @override
+  void afterMutation(Mutation<Store> mutation) {
+    finished++;
+  }
+}
+
+class MutationRejector extends Interceptor {
+  int rejected = 0;
+
+  @override
+  bool beforeMutation(Mutation<Store> mutation) {
+    if (mutation is Increment) {
+      rejected++;
+      return false;
+    }
+    return true;
+  }
+
+  @override
+  void afterMutation(Mutation<Store> mutation) {}
 }
 
 void main() {
@@ -98,6 +139,36 @@ void main() {
       expect(store.count, 0);
       await mut.comp.future;
       expect(store.count, 1);
+    });
+
+    test('interceptor execution', () async {
+      final mutCount = MutationCounter();
+      StoreKeeper(
+        store: TestStore(),
+        child: null,
+        interceptors: [mutCount],
+      );
+
+      expect(mutCount.finished, 0);
+      Increment();
+      expect(mutCount.finished, 1);
+    });
+
+    test('interceptor rejection', () async {
+      final mutReject = MutationRejector();
+      StoreKeeper(
+        store: TestStore(),
+        child: null,
+        interceptors: [mutReject],
+      );
+      final store = StoreKeeper.store as TestStore;
+
+      expect(mutReject.rejected, 0);
+      expect(store.count, 0);
+      Increment();
+      IncrementBy(by: 5);
+      expect(mutReject.rejected, 1);
+      expect(store.count, 5);
     });
   });
 }
