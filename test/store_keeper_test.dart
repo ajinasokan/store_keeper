@@ -104,7 +104,7 @@ void main() {
       StoreKeeper(store: TestStore(), child: null);
 
       final stream = StoreKeeper.events;
-      expectLater(stream.first, completion(equals(Increment)));
+      expectLater(stream.first, completion(isA<Increment>()));
       Increment();
     });
 
@@ -112,7 +112,7 @@ void main() {
       StoreKeeper(store: TestStore(), child: null);
 
       final stream = StoreKeeper.streamOf(Increment);
-      expectLater(stream.first, completion(equals(Increment)));
+      expectLater(stream.first, completion(isA<Increment>()));
       Increment();
     });
 

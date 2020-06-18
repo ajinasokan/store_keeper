@@ -19,10 +19,10 @@ class StoreKeeper extends StatelessWidget {
 
   /// This controller serves as the event broadcasting bus
   /// for the app.
-  static final _events = StreamController<Type>.broadcast();
+  static final _events = StreamController<Mutation>.broadcast();
 
   /// Broadcast stream of mutations executing across app
-  static Stream<Type> get events => _events.stream;
+  static Stream<Mutation> get events => _events.stream;
 
   /// Single store approach. This is set when initializing the app.
   static Store _store;
@@ -36,19 +36,19 @@ class StoreKeeper extends StatelessWidget {
   static final Set<Type> _buffer = <Type>{};
 
   /// Notifies widgets that mutation has executed.
-  static void notify(Type mutation) {
-    // Adds the mutation to the _events stream, for the
+  static void notify(Mutation mutation) {
+    // Adds the mutation type to the _events stream, for the
     // _StoreKeeperModel to rebuild, and to _buffer for keeping
     // track of all the mutations in the build cycle.
-    _buffer.add(mutation);
+    _buffer.add(mutation.runtimeType);
     _events.add(mutation);
   }
 
   /// Filters the main event stream with the mutation
   /// given as parameter. This can be used to perform some callbacks inside
   /// widgets after some mutation executed.
-  static Stream<Type> streamOf(Type mutation) {
-    return _events.stream.where((e) => e == mutation);
+  static Stream<Mutation> streamOf(Type mutation) {
+    return _events.stream.where((e) => e.runtimeType == mutation);
   }
 
   /// Attaches context to the mutations given in `to` param.

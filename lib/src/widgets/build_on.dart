@@ -19,8 +19,10 @@ class BuildOn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final stream = StoreKeeper.events.where(mutations.contains);
-    return StreamBuilder<Type>(
+    final stream = StoreKeeper.events.where(
+      (e) => mutations.contains(e.runtimeType),
+    );
+    return StreamBuilder<Mutation>(
       stream: stream,
       builder: (context, _) => builder(context),
     );

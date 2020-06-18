@@ -35,7 +35,7 @@ abstract class Mutation<T extends Store> {
       if (result is Future) result = await result;
 
       // Notify the widgets that execution is done
-      StoreKeeper.notify(runtimeType);
+      StoreKeeper.notify(this);
 
       // If the result is a SideEffects object then pipe the
       // result to the branch function. If its result is async
@@ -45,19 +45,19 @@ abstract class Mutation<T extends Store> {
         dynamic out = (this as SideEffects).branch(result);
         if (out is Future) await out;
 
-        StoreKeeper.notify(runtimeType);
+        StoreKeeper.notify(this);
       }
 
       // Once this is done execute all the deferred mutations
       for (var mut in _laterMutations) {
         mut();
       }
-    } on Exception catch (e, s) {
+    } catch (e, s) {
       // If an execption happens in exec or SideEffects then
       // it is caught and sent to exception callback. This is
       // useful for showing a generic error message or crash reporting.
       exception(e, s);
-      StoreKeeper.notify(runtimeType);
+      StoreKeeper.notify(this);
     }
 
     // Execute all the interceptors.

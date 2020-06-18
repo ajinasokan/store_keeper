@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import '../store_keeper.dart';
 
 /// Function signature for the callback with context.
-typedef ContextCallback = void Function(BuildContext context);
+typedef ContextCallback = void Function(
+    BuildContext context, Mutation mutation);
 
 /// Helper widget that executes the provided callbacks with context
 /// on execution of the mutations. Useful to show SnackBar or navigate
@@ -32,9 +33,11 @@ class _NotifyOnState extends State<NotifyOn> {
   void initState() {
     super.initState();
     final mutations = widget.mutations.keys.toSet();
-    final stream = StoreKeeper.events.where(mutations.contains);
+    final stream = StoreKeeper.events.where(
+      (e) => mutations.contains(e.runtimeType),
+    );
     eventSub = stream.listen((e) {
-      widget.mutations[e]?.call(context);
+      widget.mutations[e.runtimeType]?.call(context, e);
     });
   }
 
