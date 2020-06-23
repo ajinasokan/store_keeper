@@ -1,97 +1,66 @@
 # StoreKeeper
 
-StoreKeeper is an easy and flexible state management system for Flutter apps. The API is structured in a way that it will not add a lot of boiler plate code regardless of the project size. StoreKeeper is based on the InheritedModel widget from Flutter and it was initially developed as the backend of [Kite](https://play.google.com/store/apps/details?id=com.zerodha.kite3).
+StoreKeeper is a state management library built for Flutter apps with focus on simplicity. It is heavily inspired by similar libraries in the JavaScript world. Here is a basic idea of how it works:
 
-It is an action oriented system. Which means it applies changes to the UI when an action is performed. On the other hand libraries like Redux triggers the render when there is modification in the data. 
+- Single Store to keep app's data
+- Structured modifications to store with Mutations
+- Widgets listen to mutations to rebuild themselves
+- Enhance this process with Interceptors and SideEffects
 
-## Store
+Core of StoreKeeper is based on the [InheritedModel](https://api.flutter.dev/flutter/widgets/InheritedModel-class.html) widget from Flutter and it was initially developed as the backend for [Kite](https://play.google.com/store/apps/details?id=com.zerodha.kite3) in early 2018. Later it was detached to this library. Now it is in production for numerous other apps including [Coin](https://play.google.com/store/apps/details?id=com.zerodha.coin), [Olam](https://play.google.com/store/apps/details?id=com.olam) and [Hackly](https://play.google.com/store/apps/details?id=com.ajinasokan.hackly).
 
- This is where all the data of your app stored. You can have only a single store in the app. If you want to divide the store, you can create more models and add their instances to this class.
+## Getting started
+
+Add to your pubpsec:
+
+```yaml
+dependencies:
+  ...
+  store_keeper: ^0.0.3
+```
+
+Create a store:
 
 ```dart
+import 'package:store_keeper/store_keeper.dart';
+
 class AppStore extends Store {
   int count = 0;
 }
 ```
 
-## Mutations
-
-This is where the app's logic is written.
+Define mutations:
 
 ```dart
-// Write it as a class
 class Increment extends Mutation<AppStore> {
   exec() => store.count++;
 }
 
-// or write it as a function
-void increment() {
-  (StoreKeeper.store as AppStore).count++;
-  StoreKeeper.notify(increment);
+class Multiply extends Mutation<AppStore> {
+  final int by;
+
+  Multiply({this.by});
+
+  exec() => store.count *= by;
 }
 ```
 
-## Initialization
-
-You can attach store to your app like this:
-
-```dart
-void main() {
-  runApp(StoreKeeper(
-    store: AppStore(),
-    child: MyApp(),
-  ));
-}
-```
-
-## Listening
-
-In your widget if you want to rebuild it whenever a mutation happens call `update` with list of mutations:
+Listen to mutations:
 
 ```dart
 @override
 Widget build(BuildContext context) {
-  StoreKeeper.update(context, on: [Increment, Multiply]);
-  var store = StoreKeeper.store as AppStore;
+  // Define when this widget should re render
+  StoreKeeper.listen(context, to: [Increment, Multiply]);
 
-  return ...
+  // Get access to the store
+  AppStore store = StoreKeeper.store;
+
+  return Text("${store.count}");
 }
 ```
 
-## APIs
-
-`StoreKeeper.store`
-
-Returns the current instance of the store.
-
-`StoreKeeper.update(BuildContext context, {List<Object> on})`
-
-Rebuilds the widget with context everytime a mutation given to `on` is performed.
-
-`StoreKeeper.getStreamOf(Object mutation)`
-
-Returns a stream associated with the mutation which sends an update everytime the mutation is performed. Useful if you want to use it with a `StreamBuilder`. You can use `UpdateOn` widget which combines these ideas. This is useful if you want to update only a small piece of the screen.
-
-```dart
-UpdateOn(
-  mutations: [increment, multiply],
-  builder: (_) => Text("Count: ${store.count}"),
-),
-```
-
-`StoreKeeper.notify(Object mutation)`
-
-Notifies StoreKeeper that the mutation has performed. This will internally notify all the listeners of that mutation. Used when you write mutations in functions.
-
-`StoreKeeper.mutate(Object key, Function(Store) mutation)`
-
-An inline method to mutate a state. Key defines the name of the mutation. Example usage:
-
-```dart
-StoreKeeper.mutate("increment", (AppStore store) => store.count++);
-```
-
-## Simple Example
+Complete example:
 
 ```dart
 import 'package:flutter/material.dart';
@@ -127,34 +96,31 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Define when this widget should re render
-    StoreKeeper.update(context, on: [Increment, Multiply]);
+    StoreKeeper.listen(context, to: [Increment, Multiply]);
 
     // Get access to the store
-    var store = StoreKeeper.store as AppStore;
+    AppStore store = StoreKeeper.store;
 
     return MaterialApp(
       home: Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text("Count: ${store.count}"),
-              RaisedButton(
-                child: Text("Increment"),
-                onPressed: () {
-                  // Invoke mutation
-                  Increment();
-                },
-              ),
-              RaisedButton(
-                child: Text("Decrement"),
-                onPressed: () {
-                  // Invoke mutation with params
-                  Multiply(by: 2);
-                },
-              ),
-            ],
-          ),
+        body: Column(
+          children: <Widget>[
+            Text("Count: ${store.count}"),
+            RaisedButton(
+              child: Text("Increment"),
+              onPressed: () {
+                // Invoke mutation
+                Increment();
+              },
+            ),
+            RaisedButton(
+              child: Text("Multiply"),
+              onPressed: () {
+                // Invoke with params
+                Multiply(by: 2);
+              },
+            ),
+          ],
         ),
       ),
     );
@@ -162,47 +128,11 @@ class MyApp extends StatelessWidget {
 }
 ```
 
-## HTTP Requests
+## Documentation
 
-```dart
-class FetchNews extends Mutation<AppStore> with HttpEffects<Response, Response> {
-  int page;
-
-  FetchNews({this.page = 1});
-
-  exec() {
-    return Request(
-      url: "https://website.news/list.json",
-      params: {
-        "page": page.toString(),
-      },
-      success: Response(),
-      fail: Response(),
-    );
-  }
-
-  success(Response response) {
-    print(response.json());
-  }
-
-  fail(Response response) {
-    print(response.text());
-  }
-
-  exception(dynamic e, StackTrace s) {
-    print(e);
-    print(s);
-  }
-}
-```
-
-Create an abstract class like below to make the mutation more readable.
-
-```dart
-abstract class APIRequest<S extends Response, F extends Response>
-    extends Mutation<AppStore> with HttpEffects<S, F> {}
-
-class FetchNews extends APIRequest<Response, Response> {
-  ...
-}
-```
+- [Store](https://github.com/ajinasokan/store_keeper/blob/master/docs/store.md) - Where your apps's data is kept
+- [Mutations](https://github.com/ajinasokan/store_keeper/blob/master/docs/mutations.md) - Logic that modifies Store
+- [Widgets](https://github.com/ajinasokan/store_keeper/blob/master/docs/widgets.md) - Useful widgets for special cases
+- [Side effects](https://github.com/ajinasokan/store_keeper/blob/master/docs/sideeffects.md) - Chained mutations
+- [Interceptors](https://github.com/ajinasokan/store_keeper/blob/master/docs/interceptors.md) - Intercept execution of mutations
+- [API Reference](https://pub.dev/documentation/store_keeper/latest/) - Complete list of APIs and usage
