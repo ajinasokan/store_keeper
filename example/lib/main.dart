@@ -1,4 +1,5 @@
 import 'package:example/screens/apicall.dart';
+import 'package:example/screens/ratelimit.dart';
 import 'package:flutter/material.dart';
 import 'package:store_keeper/store_keeper.dart';
 
@@ -13,6 +14,9 @@ void main() {
     StoreKeeper(
       store: AppStore(),
       child: App(),
+      interceptors: [
+        RateLimiter(),
+      ],
     ),
   );
 }
@@ -61,7 +65,7 @@ class Home extends StatelessWidget {
             builder: (_) => CallbackExample(),
             title: "Callback - lib/screens/callbacks.dart",
             body: "Executing a callback with Scaffold's "
-                "widget for showing snackbar",
+                "widget for showing snackbar using NotifyOn",
           ),
           item(
             context: context,
@@ -83,6 +87,13 @@ class Home extends StatelessWidget {
             title: "API Call - lib/screens/apicall.dart",
             body: "API call fetch. Show progress indicator while "
                 "fetching. Show snackbar on error.",
+          ),
+          item(
+            context: context,
+            builder: (_) => RateLimiterExample(),
+            title: "Rate Limiter - lib/screens/ratelimit.dart",
+            body: "Rate limit a mutation to 1/second "
+                "using an Interceptor",
           ),
         ],
       ),
