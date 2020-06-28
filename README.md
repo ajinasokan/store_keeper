@@ -16,7 +16,7 @@ Add to your pubpsec:
 ```yaml
 dependencies:
   ...
-  store_keeper: ^0.0.3
+  store_keeper: ^0.0.4
 ```
 
 Create a store:

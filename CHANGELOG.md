@@ -1,3 +1,15 @@
+## [0.0.4]
+
+* API Refactors
+    - StoreKeeper.update changes to StoreKeeper.listen
+    - StoreKeeper.getStreamOf changes to StoreKeeper.streamOf
+    - UpdateOn changes to RebuildOn
+    - APIs works with the Type instead of hashCode
+    - Removed HTTP side effects. Will be available as plugin.
+* New helper widget - NotifyOn
+* Added support for Interceptors
+* More docs and tests, effective_dart
+
 ## [0.0.3]
 
 * Simplified internals with unified event stream
