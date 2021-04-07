@@ -62,10 +62,10 @@ class ExampleWidget extends StatelessWidget {
 class ExampleBuilderWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final store = StoreKeeper.store as TestStore;
+    final store = StoreKeeper.store as TestStore?;
     return BuildOn(
       mutations: {Increment},
-      builder: (_) => Text("count is ${store.count}"),
+      builder: (_) => Text("count is ${store!.count}"),
     );
   }
 }

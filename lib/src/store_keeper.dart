@@ -15,17 +15,18 @@ class StoreKeeper extends StatelessWidget {
   final Widget child;
 
   /// List of all mutation interceptors
-  static List<Interceptor> _interceptors;
+  static late List<Interceptor> _interceptors;
 
   /// This controller serves as the event broadcasting bus
   /// for the app.
-  static final _events = StreamController<Mutation>.broadcast();
+  static final StreamController<Mutation<Store>> _events =
+      StreamController<Mutation>.broadcast();
 
   /// Broadcast stream of mutations executing across app
   static Stream<Mutation> get events => _events.stream;
 
   /// Single store approach. This is set when initializing the app.
-  static Store _store;
+  static late Store _store;
 
   /// Getter to get the current instance of [Store]. It can be
   /// casted to appropriate type by the widgets.
@@ -53,7 +54,7 @@ class StoreKeeper extends StatelessWidget {
 
   /// Attaches context to the mutations given in `to` param.
   /// When a mutation specified execute widget will rebuild.
-  static void listen(BuildContext context, {List<Type> to}) {
+  static void listen(BuildContext context, {required List<Type> to}) {
     for (var mut in to) {
       context.dependOnInheritedWidgetOfExactType<_StoreKeeperModel>(
         aspect: mut,
@@ -63,13 +64,10 @@ class StoreKeeper extends StatelessWidget {
 
   /// Constructor collects the store instance and interceptors.
   StoreKeeper({
-    @required Store store,
-    @required this.child,
+    required Store store,
+    required this.child,
     List<Interceptor> interceptors = const [],
   }) {
-    assert(store != null, "Uninitialized store");
-    assert(interceptors != null, "Interceptor list can't be null");
-
     StoreKeeper._store = store;
     StoreKeeper._interceptors = interceptors;
   }

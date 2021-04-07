@@ -36,7 +36,7 @@ class RateLimiterExample extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     StoreKeeper.listen(context, to: [Increment]);
-    AppStore store = StoreKeeper.store;
+    AppStore store = StoreKeeper.store as AppStore;
 
     return Scaffold(
       appBar: AppBar(title: Text("Rate limiter")),

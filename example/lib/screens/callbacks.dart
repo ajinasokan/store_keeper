@@ -3,7 +3,7 @@ import 'package:store_keeper/store_keeper.dart';
 import 'package:example/store.dart';
 
 class CallmeBack extends Mutation<AppStore> {
-  String message;
+  late String message;
 
   exec() {
     message = "Hello from callback";

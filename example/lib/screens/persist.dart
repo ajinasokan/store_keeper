@@ -32,7 +32,7 @@ class PersistExample extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     StoreKeeper.listen(context, to: [Increment, Save, Load]);
-    AppStore store = StoreKeeper.store;
+    AppStore store = StoreKeeper.store as AppStore;
 
     return Scaffold(
       appBar: AppBar(title: Text("Persistance")),

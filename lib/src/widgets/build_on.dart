@@ -13,9 +13,9 @@ class BuildOn extends StatelessWidget {
   /// Creates widget to rerender child widgets when given
   /// [mutations] execute.
   BuildOn({
-    @required this.builder,
-    @required this.mutations,
-  }) : assert(mutations != null);
+    required this.builder,
+    required this.mutations,
+  });
 
   @override
   Widget build(BuildContext context) {

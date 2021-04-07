@@ -11,7 +11,7 @@ class Increment extends Mutation<AppStore> {
 class Multiply extends Mutation<AppStore> {
   final int by;
 
-  Multiply({this.by});
+  Multiply({required this.by});
 
   exec() {
     store.count *= by;
@@ -28,7 +28,7 @@ class CounterExample extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     StoreKeeper.listen(context, to: [Increment, Multiply, Reset]);
-    AppStore store = StoreKeeper.store;
+    AppStore store = StoreKeeper.store as AppStore;
 
     return Scaffold(
       appBar: AppBar(title: Text("Counter")),

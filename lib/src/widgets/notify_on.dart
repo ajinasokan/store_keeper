@@ -11,7 +11,7 @@ typedef ContextCallback = void Function(
 /// to a different route after a mutation.
 class NotifyOn extends StatefulWidget {
   /// Optional child widget
-  final Widget child;
+  final Widget? child;
 
   /// Map of mutations and their corresponding callback
   final Map<Type, ContextCallback> mutations;
@@ -19,15 +19,15 @@ class NotifyOn extends StatefulWidget {
   /// [NotifyOn] make callbacks for given mutations
   NotifyOn({
     this.child,
-    @required this.mutations,
-  }) : assert(mutations != null);
+    required this.mutations,
+  });
 
   @override
   _NotifyOnState createState() => _NotifyOnState();
 }
 
 class _NotifyOnState extends State<NotifyOn> {
-  StreamSubscription eventSub;
+  StreamSubscription? eventSub;
 
   @override
   void initState() {

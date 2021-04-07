@@ -34,14 +34,14 @@ class App extends StatelessWidget {
 
 class Home extends StatelessWidget {
   Widget item({
-    BuildContext context,
-    String title,
-    String body,
-    WidgetBuilder builder,
+    BuildContext? context,
+    required String title,
+    required String body,
+    WidgetBuilder? builder,
   }) {
     return ListTile(
       onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(builder: builder));
+        Navigator.of(context!).push(MaterialPageRoute(builder: builder!));
       },
       title: Text(title),
       subtitle: Text(body),

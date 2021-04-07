@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:store_keeper/store_keeper.dart';
 
+import 'package:flutter/widgets.dart';
+
 class TestStore extends Store {
   int count = 0;
 }
@@ -92,7 +94,7 @@ class MutationRejector extends Interceptor {
 void main() {
   group("event management", () {
     test('incrementing count', () {
-      StoreKeeper(store: TestStore(), child: null);
+      StoreKeeper(store: TestStore(), child: SizedBox());
       final store = StoreKeeper.store as TestStore;
 
       expect(store.count, 0);
@@ -101,7 +103,7 @@ void main() {
     });
 
     test('stream of events', () {
-      StoreKeeper(store: TestStore(), child: null);
+      StoreKeeper(store: TestStore(), child: SizedBox());
 
       final stream = StoreKeeper.events;
       expectLater(stream.first, completion(isA<Increment>()));
@@ -109,7 +111,7 @@ void main() {
     });
 
     test('stream of mutation events', () {
-      StoreKeeper(store: TestStore(), child: null);
+      StoreKeeper(store: TestStore(), child: SizedBox());
 
       final stream = StoreKeeper.streamOf(Increment);
       expectLater(stream.first, completion(isA<Increment>()));
@@ -117,14 +119,14 @@ void main() {
     });
 
     test('exception catching', () {
-      StoreKeeper(store: TestStore(), child: null);
+      StoreKeeper(store: TestStore(), child: SizedBox());
 
       final em = ExceptionMut();
       expect(em.caught, true);
     });
 
     test('lazy execution', () {
-      StoreKeeper(store: TestStore(), child: null);
+      StoreKeeper(store: TestStore(), child: SizedBox());
       final store = StoreKeeper.store as TestStore;
 
       IncrementLater();
@@ -132,7 +134,7 @@ void main() {
     });
 
     test('async execution', () async {
-      StoreKeeper(store: TestStore(), child: null);
+      StoreKeeper(store: TestStore(), child: SizedBox());
       final store = StoreKeeper.store as TestStore;
 
       final mut = AsyncIncrement();
@@ -145,7 +147,7 @@ void main() {
       final mutCount = MutationCounter();
       StoreKeeper(
         store: TestStore(),
-        child: null,
+        child: SizedBox(),
         interceptors: [mutCount],
       );
 
@@ -158,7 +160,7 @@ void main() {
       final mutReject = MutationRejector();
       StoreKeeper(
         store: TestStore(),
-        child: null,
+        child: SizedBox(),
         interceptors: [mutReject],
       );
       final store = StoreKeeper.store as TestStore;

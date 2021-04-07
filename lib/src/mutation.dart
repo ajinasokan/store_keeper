@@ -7,7 +7,7 @@ typedef MutationBuilder = Mutation Function();
 /// An implementation of this class holds the logic for updating the [Store].
 abstract class Mutation<T extends Store> {
   /// Reference to the current instance of [Store]
-  T get store => StoreKeeper.store;
+  T get store => StoreKeeper.store as T;
 
   /// List of mutation to execute after current one.
   final List<MutationBuilder> _laterMutations = [];
