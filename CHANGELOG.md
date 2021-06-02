@@ -1,3 +1,7 @@
+## [1.0.0]
+
+* Null safety migration
+
 ## [0.0.4]
 
 * API Refactors
