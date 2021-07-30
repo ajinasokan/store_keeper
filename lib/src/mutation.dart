@@ -12,9 +12,12 @@ abstract class Mutation<T extends Store> {
   /// List of mutation to execute after current one.
   final List<MutationBuilder> _laterMutations = [];
 
+  late StackTrace _invokeTrace;
+
   /// A mutation logic inside [exec] is executed immediately after
   /// creating an object of the mutation.
   Mutation() {
+    _invokeTrace = StackTrace.current;
     _run();
   }
 
@@ -50,7 +53,7 @@ abstract class Mutation<T extends Store> {
       for (var mut in _laterMutations) {
         mut();
       }
-    } catch (e, s) {
+    } on Exception catch (e, s) {
       // If an execption happens in exec or SideEffects then
       // it is caught and sent to exception callback. This is
       // useful for showing a generic error message or crash reporting.
@@ -84,7 +87,23 @@ abstract class Mutation<T extends Store> {
     assert(isAssertOn = true);
     if (isAssertOn) {
       print(e);
-      print(s);
+      _printCleanTrace(s);
+      // if there was an async suspension then construction is not
+      // part of the trace. using this to detect suspensions.
+      if (!s.toString().contains("new Mutation")) {
+        print("Invoked from:");
+        _printCleanTrace(_invokeTrace);
+      }
+    }
+  }
+
+  void _printCleanTrace(StackTrace s) {
+    var traces = s.toString().split("\n");
+    for (var trace in traces) {
+      if (trace.trim().isEmpty) continue;
+      if (trace.contains("package:store_keeper/src/mutation.dart")) continue;
+
+      print(trace);
     }
   }
 }
