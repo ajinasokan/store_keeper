@@ -1,3 +1,7 @@
+## [1.0.1]
+
+* Updated http dependency to `^1.2.2`
+
 ## [1.0.0]
 
 * Null safety migration
