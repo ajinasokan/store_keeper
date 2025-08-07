@@ -19,13 +19,13 @@ class CallbackExample extends StatelessWidget {
         mutations: {
           CallmeBack: (ctx, mut) {
             final message = (mut as CallmeBack).message;
-            Scaffold.of(ctx).showSnackBar(
+            ScaffoldMessenger.of(ctx).showSnackBar(
               SnackBar(content: Text(message)),
             );
           }
         },
         child: Center(
-          child: RaisedButton(
+          child: ElevatedButton(
             child: Text("Execute mutation"),
             onPressed: () {
               CallmeBack();

@@ -41,19 +41,19 @@ class PersistExample extends StatelessWidget {
         child: Column(
           children: <Widget>[
             Text("Count: ${store.count}"),
-            RaisedButton(
+            ElevatedButton(
               child: Text("Increment"),
               onPressed: () {
                 Increment();
               },
             ),
-            RaisedButton(
+            ElevatedButton(
               child: Text("Load"),
               onPressed: () {
                 Load();
               },
             ),
-            RaisedButton(
+            ElevatedButton(
               child: Text("Save"),
               onPressed: () {
                 Save();
