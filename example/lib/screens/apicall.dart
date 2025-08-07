@@ -59,7 +59,7 @@ class APICallExample extends StatelessWidget {
   void onFetchIP(BuildContext ctx, Mutation mut) {
     final err = (mut as FetchIP).err;
     if (err.isNotEmpty) {
-      Scaffold.of(ctx).showSnackBar(
+      ScaffoldMessenger.of(ctx).showSnackBar(
         SnackBar(content: Text(err)),
       );
     }
@@ -94,13 +94,13 @@ class APICallExample extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Text("IP: ${store.ip}"),
-              RaisedButton(
+              ElevatedButton(
                 child: Text("Make API Call"),
                 onPressed: () {
                   FetchIP();
                 },
               ),
-              RaisedButton(
+              ElevatedButton(
                 child: Text("Make API Call (with error)"),
                 onPressed: () {
                   FetchIP(forceError: true);

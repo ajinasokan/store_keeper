@@ -16,7 +16,7 @@ class NavigationExample extends StatelessWidget {
       body: NotifyOn(
         mutations: {
           DismissMe: (ctx, mut) async {
-            Scaffold.of(ctx).showSnackBar(
+            ScaffoldMessenger.of(ctx).showSnackBar(
               SnackBar(
                   content: Text("This screen will be closed in 2 seconds")),
             );
@@ -25,7 +25,7 @@ class NavigationExample extends StatelessWidget {
           }
         },
         child: Center(
-          child: RaisedButton(
+          child: ElevatedButton(
             child: Text("Execute mutation"),
             onPressed: () {
               DismissMe();

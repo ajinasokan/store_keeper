@@ -45,7 +45,7 @@ class RateLimiterExample extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Text("Count: ${store.count}"),
-            RaisedButton(
+            ElevatedButton(
               child: Text("Increment"),
               onPressed: () => Increment(),
             ),

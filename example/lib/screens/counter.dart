@@ -37,19 +37,19 @@ class CounterExample extends StatelessWidget {
         child: Column(
           children: <Widget>[
             Text("Count: ${store.count}"),
-            RaisedButton(
+            ElevatedButton(
               child: Text("Increment"),
               onPressed: () {
                 Increment();
               },
             ),
-            RaisedButton(
+            ElevatedButton(
               child: Text("Multiply"),
               onPressed: () {
                 Multiply(by: 2);
               },
             ),
-            RaisedButton(
+            ElevatedButton(
               child: Text("Reset"),
               onPressed: () {
                 Reset();
