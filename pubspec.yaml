@@ -1,6 +1,6 @@
 name: store_keeper
 description: StoreKeeper is an easy and flexible state management system for Flutter apps
-version: 1.0.1
+version: 1.0.2
 homepage: https://github.com/ajinasokan/store_keeper
 
 environment:
