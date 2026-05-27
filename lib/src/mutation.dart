@@ -86,12 +86,13 @@ abstract class Mutation<T extends Store> {
     var isAssertOn = false;
     assert(isAssertOn = true);
     if (isAssertOn) {
-      print(e);
+      // Intentional debug printing in assertion-only code path
+      print(e); // ignore: avoid_print
       _printCleanTrace(s);
       // if there was an async suspension then construction is not
       // part of the trace. using this to detect suspensions.
       if (!s.toString().contains("new Mutation")) {
-        print("Invoked from:");
+        print("Invoked from:"); // ignore: avoid_print
         _printCleanTrace(_invokeTrace);
       }
     }
@@ -103,7 +104,7 @@ abstract class Mutation<T extends Store> {
       if (trace.trim().isEmpty) continue;
       if (trace.contains("package:store_keeper/src/mutation.dart")) continue;
 
-      print(trace);
+      print(trace); // ignore: avoid_print
     }
   }
 }

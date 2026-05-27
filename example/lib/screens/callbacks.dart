@@ -5,12 +5,15 @@ import 'package:example/store.dart';
 class CallmeBack extends Mutation<AppStore> {
   late String message;
 
+  @override
   exec() {
     message = "Hello from callback";
   }
 }
 
 class CallbackExample extends StatelessWidget {
+  const CallbackExample({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

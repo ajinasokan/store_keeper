@@ -17,13 +17,14 @@ class NotifyOn extends StatefulWidget {
   final Map<Type, ContextCallback> mutations;
 
   /// [NotifyOn] make callbacks for given mutations
-  NotifyOn({
+  const NotifyOn({
+    super.key,
     this.child,
     required this.mutations,
   });
 
   @override
-  _NotifyOnState createState() => _NotifyOnState();
+  State<NotifyOn> createState() => _NotifyOnState();
 }
 
 class _NotifyOnState extends State<NotifyOn> {
@@ -37,6 +38,7 @@ class _NotifyOnState extends State<NotifyOn> {
       (e) => mutations.contains(e.runtimeType),
     );
     eventSub = stream.listen((e) {
+      if (!mounted) return;
       widget.mutations[e.runtimeType]?.call(context, e);
     });
   }

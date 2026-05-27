@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 
 import 'package:example/store.dart';
 
-abstract class HttpEffects implements SideEffects<http.Request> {
+mixin class HttpEffects implements SideEffects<http.Request> {
   @override
   Future<void> branch(http.Request result) async {
     final response = await http.Response.fromStream(await result.send());
@@ -27,20 +27,24 @@ class FetchIP extends Mutation<AppStore> with HttpEffects {
   bool forceError;
   FetchIP({this.forceError = false});
 
+  @override
   http.Request exec() {
     store.ip = "";
     store.isFetchingIP = true;
-    if (forceError)
+    if (forceError) {
       return http.Request("GET", Uri.parse("https://unknown.domain"));
-    else
+    } else {
       return http.Request("GET", Uri.parse("https://icanhazip.com"));
+    }
   }
 
+  @override
   void success(http.Response response) {
     store.isFetchingIP = false;
     store.ip = response.body;
   }
 
+  @override
   void fail(http.Response response) {
     store.isFetchingIP = false;
     err = "Couldn't fetch. Error ${response.statusCode}.";
@@ -56,6 +60,8 @@ class FetchIP extends Mutation<AppStore> with HttpEffects {
 }
 
 class APICallExample extends StatelessWidget {
+  const APICallExample({super.key});
+
   void onFetchIP(BuildContext ctx, Mutation mut) {
     final err = (mut as FetchIP).err;
     if (err.isNotEmpty) {

@@ -51,6 +51,8 @@ class Increment extends Mutation<TestStore> {
 }
 
 class ExampleWidget extends StatelessWidget {
+  const ExampleWidget({super.key});
+
   @override
   Widget build(BuildContext context) {
     StoreKeeper.listen(context, to: [Increment]);
@@ -60,6 +62,8 @@ class ExampleWidget extends StatelessWidget {
 }
 
 class ExampleBuilderWidget extends StatelessWidget {
+  const ExampleBuilderWidget({super.key});
+
   @override
   Widget build(BuildContext context) {
     final store = StoreKeeper.store as TestStore?;

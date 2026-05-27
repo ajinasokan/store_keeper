@@ -13,15 +13,17 @@ void main() {
   runApp(
     StoreKeeper(
       store: AppStore(),
-      child: App(),
       interceptors: [
         RateLimiter(),
       ],
+      child: App(),
     ),
   );
 }
 
 class App extends StatelessWidget {
+  const App({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -33,6 +35,8 @@ class App extends StatelessWidget {
 }
 
 class Home extends StatelessWidget {
+  const Home({super.key});
+
   Widget item({
     BuildContext? context,
     required String title,

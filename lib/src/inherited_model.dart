@@ -5,11 +5,10 @@ part of 'store_keeper.dart';
 class _StoreKeeperModel extends InheritedModel<Type> {
   final Set<Type> recent;
 
-  _StoreKeeperModel({
-    required Widget child,
+  const _StoreKeeperModel({
+    required super.child,
     required this.recent,
-  }) : super(child: child);
-
+  });
   @override
   bool updateShouldNotify(_) => true;
 

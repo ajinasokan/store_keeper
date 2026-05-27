@@ -147,8 +147,8 @@ void main() {
       final mutCount = MutationCounter();
       StoreKeeper(
         store: TestStore(),
-        child: SizedBox(),
         interceptors: [mutCount],
+        child: SizedBox(),
       );
 
       expect(mutCount.finished, 0);
@@ -160,8 +160,8 @@ void main() {
       final mutReject = MutationRejector();
       StoreKeeper(
         store: TestStore(),
-        child: SizedBox(),
         interceptors: [mutReject],
+        child: SizedBox(),
       );
       final store = StoreKeeper.store as TestStore;
 

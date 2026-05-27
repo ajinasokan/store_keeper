@@ -12,7 +12,8 @@ class BuildOn extends StatelessWidget {
 
   /// Creates widget to rerender child widgets when given
   /// [mutations] execute.
-  BuildOn({
+  const BuildOn({
+    super.key,
     required this.builder,
     required this.mutations,
   });

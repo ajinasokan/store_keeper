@@ -27,12 +27,15 @@ class RateLimiter extends Interceptor {
 }
 
 class Increment extends Mutation<AppStore> {
+  @override
   exec() {
     store.count++;
   }
 }
 
 class RateLimiterExample extends StatelessWidget {
+  const RateLimiterExample({super.key});
+
   @override
   Widget build(BuildContext context) {
     StoreKeeper.listen(context, to: [Increment]);

@@ -3,6 +3,7 @@ import 'package:store_keeper/store_keeper.dart';
 import 'package:example/store.dart';
 
 class Increment extends Mutation<AppStore> {
+  @override
   exec() {
     store.count++;
   }
@@ -13,18 +14,22 @@ class Multiply extends Mutation<AppStore> {
 
   Multiply({required this.by});
 
+  @override
   exec() {
     store.count *= by;
   }
 }
 
 class Reset extends Mutation<AppStore> {
+  @override
   exec() {
     store.count = 0;
   }
 }
 
 class CounterExample extends StatelessWidget {
+  const CounterExample({super.key});
+
   @override
   Widget build(BuildContext context) {
     StoreKeeper.listen(context, to: [Increment, Multiply, Reset]);

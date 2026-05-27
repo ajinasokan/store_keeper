@@ -64,6 +64,7 @@ class StoreKeeper extends StatelessWidget {
 
   /// Constructor collects the store instance and interceptors.
   StoreKeeper({
+    super.key,
     required Store store,
     required this.child,
     List<Interceptor> interceptors = const [],
@@ -84,7 +85,7 @@ class StoreKeeper extends StatelessWidget {
 
         // Rebuild inherited model with all the mutations
         // inside "clone" as the aspects changed
-        return _StoreKeeperModel(child: child, recent: clone);
+        return _StoreKeeperModel(recent: clone, child: child);
       },
     );
   }
