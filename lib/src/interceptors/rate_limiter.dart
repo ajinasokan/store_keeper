@@ -19,6 +19,10 @@
 //     child: const MyApp(),
 //   ));
 
+import 'dart:developer' as developer;
+
+import 'package:flutter/foundation.dart' show kDebugMode;
+
 import 'package:store_keeper/store_keeper.dart';
 
 /// Mutations that mix in [RateLimit] are throttled by the [RateLimiter]
@@ -37,6 +41,11 @@ mixin RateLimit {
 class RateLimiter extends Interceptor {
   final _lastFired = <dynamic, DateTime>{};
 
+  /// Whether to log blocked mutations. Defaults to [kDebugMode].
+  final bool verbose;
+
+  RateLimiter({this.verbose = kDebugMode});
+
   @override
   bool beforeMutation(Mutation mutation) {
     if (mutation is! RateLimit) return true;
@@ -48,6 +57,12 @@ class RateLimiter extends Interceptor {
 
     // Inside the window since the last allowed firing: drop it.
     if (last != null && now.difference(last) < rateLimit.rateLimitTime) {
+      if (verbose) {
+        developer.log(
+          '${mutation.runtimeType} blocked',
+          name: 'RateLimiter',
+        );
+      }
       return false;
     }
 

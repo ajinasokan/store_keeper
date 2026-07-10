@@ -26,6 +26,9 @@
 //   ));
 
 import 'dart:async';
+import 'dart:developer' as developer;
+
+import 'package:flutter/foundation.dart' show kDebugMode;
 
 import 'package:store_keeper/store_keeper.dart';
 
@@ -53,6 +56,12 @@ class Debouncer extends Interceptor {
   final _pending = <dynamic, Mutation>{};
   final _passthrough = <Mutation>{};
 
+  /// Whether to log blocked and debounced-fire mutations. Defaults to
+  /// [kDebugMode].
+  final bool verbose;
+
+  Debouncer({this.verbose = kDebugMode});
+
   @override
   bool beforeMutation(Mutation mutation) {
     if (mutation is! Debounce) return true;
@@ -73,6 +82,12 @@ class Debouncer extends Interceptor {
     }
 
     // Inside the window: decline and remember the latest instance.
+    if (verbose) {
+      developer.log(
+        '${mutation.runtimeType} blocked',
+        name: 'Debouncer',
+      );
+    }
     _pending[key] = mutation;
     return false;
   }
@@ -84,6 +99,12 @@ class Debouncer extends Interceptor {
       _timers.remove(key);
       final pending = _pending.remove(key);
       if (pending != null) {
+        if (verbose) {
+          developer.log(
+            '${pending.runtimeType} released',
+            name: 'Debouncer',
+          );
+        }
         _passthrough.add(pending);
         pending.redispatch();
       }

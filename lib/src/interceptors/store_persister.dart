@@ -7,7 +7,7 @@ import '../../store_keeper.dart';
 /// Pass the set of mutation types that should trigger a save via [persistOn],
 /// and a [save] callback that writes the store somewhere (e.g. the keyval
 /// table). Saves are debounced: a burst of matching mutations collapses into a
-/// single save once [debounce] of quiet time passes, so we don't write on every
+/// single save once [debounceTime] of quiet time passes, so we don't write on every
 /// mutation.
 ///
 ///   runApp(StoreKeeper(
@@ -30,18 +30,18 @@ class StorePersister extends Interceptor {
   /// Mutation types after which the store should be persisted.
   final Set<Type> persistOn;
 
-  /// Writes the store. Called at most once per quiet [debounce] window.
+  /// Writes the store. Called at most once per quiet [debounceTime] window.
   final Future<void> Function() save;
 
   /// How long to wait after the last matching mutation before saving.
-  final Duration debounce;
+  final Duration debounceTime;
 
   Timer? _timer;
 
   StorePersister({
     required this.persistOn,
     required this.save,
-    this.debounce = const Duration(seconds: 1),
+    this.debounceTime = const Duration(seconds: 1),
   });
 
   @override
@@ -54,8 +54,8 @@ class StorePersister extends Interceptor {
     // Restart the timer on each matching mutation so a burst results in one
     // save after things settle.
     _timer?.cancel();
-    _timer = Timer(debounce, () async {
-      developer.log('saving store', name: 'store_persister');
+    _timer = Timer(debounceTime, () async {
+      developer.log('saving store', name: 'StorePersister');
       await save();
     });
   }
