@@ -14,9 +14,7 @@ Core of StoreKeeper is based on the [InheritedModel](https://api.flutter.dev/flu
 Add to your pubpsec:
 
 ```yaml
-dependencies:
-  ...
-  store_keeper: ^1.0.0
+flutter pub add store_keeper
 ```
 
 Create a store:
