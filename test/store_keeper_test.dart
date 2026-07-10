@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart';
 
 class TestStore extends Store {
   int count = 0;
+  String value = "";
 }
 
 class Increment extends Mutation<TestStore> {
@@ -72,6 +73,38 @@ class MutationCounter extends Interceptor {
   @override
   void afterMutation(Mutation<Store> mutation) {
     finished++;
+  }
+}
+
+class SetValue extends Mutation<TestStore> with Debounce {
+  final String value;
+
+  SetValue(this.value);
+
+  @override
+  Duration get debounceTime => const Duration(milliseconds: 30);
+
+  @override
+  void exec() {
+    store.value = value;
+  }
+}
+
+class SetKeyedValue extends Mutation<TestStore> with Debounce {
+  final String key;
+  final String value;
+
+  SetKeyedValue(this.key, this.value);
+
+  @override
+  Duration get debounceTime => const Duration(milliseconds: 30);
+
+  @override
+  dynamic get debounceKey => key;
+
+  @override
+  void exec() {
+    store.value = "$key:$value";
   }
 }
 
@@ -171,6 +204,72 @@ void main() {
       IncrementBy(by: 5);
       expect(mutReject.rejected, 1);
       expect(store.count, 5);
+    });
+  });
+
+  group("debounce interceptor", () {
+    test('leading fires, burst coalesces to latest', () async {
+      StoreKeeper(
+        store: TestStore(),
+        interceptors: [Debouncer()],
+        child: SizedBox(),
+      );
+      final store = StoreKeeper.store as TestStore;
+
+      // First instance fires immediately (leading edge).
+      SetValue("a");
+      expect(store.value, "a");
+
+      // Inside the window: declined, latest kept (b overwritten by c).
+      SetValue("b");
+      SetValue("c");
+      expect(store.value, "a");
+
+      // After the window closes only the latest (c) lands.
+      await Future.delayed(const Duration(milliseconds: 50));
+      expect(store.value, "c");
+    });
+
+    test('trailing fire opens a new window', () async {
+      StoreKeeper(
+        store: TestStore(),
+        interceptors: [Debouncer()],
+        child: SizedBox(),
+      );
+      final store = StoreKeeper.store as TestStore;
+
+      SetValue("a"); // leading
+      SetValue("b"); // deferred
+      await Future.delayed(const Duration(milliseconds: 50));
+      expect(store.value, "b"); // trailing fire of b opens a new window
+
+      // An instance right after the trailing fire is inside the new window,
+      // so it is deferred rather than firing immediately.
+      SetValue("c");
+      expect(store.value, "b");
+      await Future.delayed(const Duration(milliseconds: 50));
+      expect(store.value, "c");
+    });
+
+    test('different keys debounce independently', () async {
+      StoreKeeper(
+        store: TestStore(),
+        interceptors: [Debouncer()],
+        child: SizedBox(),
+      );
+      final store = StoreKeeper.store as TestStore;
+
+      // Different keys => independent leading edges, both fire immediately.
+      SetKeyedValue("x", "1");
+      expect(store.value, "x:1");
+      SetKeyedValue("y", "1");
+      expect(store.value, "y:1");
+
+      // Same key within window is deferred to latest.
+      SetKeyedValue("x", "2");
+      SetKeyedValue("x", "3");
+      await Future.delayed(const Duration(milliseconds: 50));
+      expect(store.value, "x:3");
     });
   });
 }

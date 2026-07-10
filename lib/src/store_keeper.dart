@@ -218,6 +218,11 @@ abstract class Mutation<T extends Store> {
     _laterMutations.add(mutationBuilder);
   }
 
+  /// Re-executes this mutation through the full interceptor + notify pipeline.
+  /// Used by interceptors (e.g. Debouncer) that defer a declined mutation and
+  /// replay it once its window closes.
+  void redispatch() => _run();
+
   /// This function implements the logic of the mutation.
   /// It can return any value. If it is a [Future] it will be awaited.
   /// If it is [SideEffects] object, result will be piped to its
