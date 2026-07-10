@@ -1,3 +1,12 @@
+## [2.0.0]
+
+* Rewrote internals using `ProxyWidget`
+* New built-in interceptors:
+    - Logger
+    - Store persist
+    - Debouncer
+    - Rate limiter
+
 ## [1.0.2]
 
 * Removed http dependency
