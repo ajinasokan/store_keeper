@@ -3,30 +3,12 @@ import 'package:store_keeper/store_keeper.dart';
 
 import 'package:example/store.dart';
 
-class RateLimiter extends Interceptor {
-  var lastIncOn = DateTime.now();
-
+class Increment extends Mutation<AppStore> with RateLimit {
+  // Allow this mutation to fire at most once per second; the RateLimiter
+  // interceptor (registered in main.dart) drops the rest.
   @override
-  bool beforeMutation(Mutation<Store> mutation) {
-    if (mutation is Increment) {
-      final now = DateTime.now();
+  Duration get rateLimitTime => const Duration(seconds: 1);
 
-      // if the last call was not before one second cancel
-      // this execution
-      if (now.difference(lastIncOn) < Duration(seconds: 1)) {
-        return false;
-      }
-
-      lastIncOn = now;
-    }
-    return true;
-  }
-
-  @override
-  void afterMutation(Mutation<Store> mutation) {}
-}
-
-class Increment extends Mutation<AppStore> {
   @override
   exec() {
     store.count++;

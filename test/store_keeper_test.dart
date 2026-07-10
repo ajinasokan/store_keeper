@@ -108,6 +108,33 @@ class SetKeyedValue extends Mutation<TestStore> with Debounce {
   }
 }
 
+class Bump extends Mutation<TestStore> with RateLimit {
+  @override
+  Duration get rateLimitTime => const Duration(milliseconds: 30);
+
+  @override
+  void exec() {
+    store.count++;
+  }
+}
+
+class KeyedBump extends Mutation<TestStore> with RateLimit {
+  final String key;
+
+  KeyedBump(this.key);
+
+  @override
+  Duration get rateLimitTime => const Duration(milliseconds: 30);
+
+  @override
+  dynamic get rateLimitKey => key;
+
+  @override
+  void exec() {
+    store.count++;
+  }
+}
+
 class MutationRejector extends Interceptor {
   int rejected = 0;
 
@@ -270,6 +297,49 @@ void main() {
       SetKeyedValue("x", "3");
       await Future.delayed(const Duration(milliseconds: 50));
       expect(store.value, "x:3");
+    });
+  });
+
+  group("rate limiter interceptor", () {
+    test('drops instances within the window', () async {
+      StoreKeeper(
+        store: TestStore(),
+        interceptors: [RateLimiter()],
+        child: SizedBox(),
+      );
+      final store = StoreKeeper.store as TestStore;
+
+      // First fires immediately.
+      Bump();
+      expect(store.count, 1);
+
+      // Inside the window: dropped.
+      Bump();
+      Bump();
+      expect(store.count, 1);
+
+      // After the window elapses, a new one fires again.
+      await Future.delayed(const Duration(milliseconds: 50));
+      Bump();
+      expect(store.count, 2);
+    });
+
+    test('different keys are limited independently', () {
+      StoreKeeper(
+        store: TestStore(),
+        interceptors: [RateLimiter()],
+        child: SizedBox(),
+      );
+      final store = StoreKeeper.store as TestStore;
+
+      // Different keys => independent windows, both fire.
+      KeyedBump("x");
+      KeyedBump("y");
+      expect(store.count, 2);
+
+      // Same key within window is dropped.
+      KeyedBump("x");
+      expect(store.count, 2);
     });
   });
 }
