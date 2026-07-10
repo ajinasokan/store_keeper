@@ -9,6 +9,9 @@ class AppStore extends Store {
   // For counter example
   int count = 0;
 
+  // For debounce example
+  String query = "";
+
   void fromJSON(String jstring) {
     count = json.decode(jstring)["count"];
   }

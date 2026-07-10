@@ -6,14 +6,16 @@ import 'package:path/path.dart' as ppath;
 import 'package:store_keeper/store_keeper.dart';
 import 'package:example/store.dart';
 
-class Increment extends Mutation<AppStore> {
+class IncrementCount extends Mutation<AppStore> {
   @override
   exec() {
     store.count++;
   }
 }
 
-class Save extends Mutation<AppStore> {
+/// Writes the store to disk. Dispatched by the StorePersister interceptor in
+/// main.dart so it runs automatically (and debounced) after [IncrementCount].
+class SaveStore extends Mutation<AppStore> {
   @override
   exec() async {
     final dataDir = await ppath.getApplicationDocumentsDirectory();
@@ -22,7 +24,7 @@ class Save extends Mutation<AppStore> {
   }
 }
 
-class Load extends Mutation<AppStore> {
+class LoadStore extends Mutation<AppStore> {
   @override
   exec() async {
     final dataDir = await ppath.getApplicationDocumentsDirectory();
@@ -36,7 +38,7 @@ class PersistExample extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    StoreKeeper.listen(context, to: [Increment, Save, Load]);
+    StoreKeeper.listen(context, to: [IncrementCount, LoadStore]);
     AppStore store = StoreKeeper.store as AppStore;
 
     return Scaffold(
@@ -47,22 +49,25 @@ class PersistExample extends StatelessWidget {
           children: <Widget>[
             Text("Count: ${store.count}"),
             ElevatedButton(
-              child: Text("Increment"),
+              child: Text("IncrementCount"),
               onPressed: () {
-                Increment();
+                IncrementCount();
               },
             ),
             ElevatedButton(
               child: Text("Load"),
               onPressed: () {
-                Load();
+                LoadStore();
               },
             ),
-            ElevatedButton(
-              child: Text("Save"),
-              onPressed: () {
-                Save();
-              },
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: Text(
+                "IncrementCount saves the store automatically via the "
+                "StorePersister interceptor (debounced). Restart the app "
+                "and tap Load to restore.",
+                textAlign: TextAlign.center,
+              ),
             ),
           ],
         ),

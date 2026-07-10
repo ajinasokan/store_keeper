@@ -5,6 +5,7 @@ import 'package:store_keeper/store_keeper.dart';
 
 import 'package:example/screens/callbacks.dart';
 import 'package:example/screens/counter.dart';
+import 'package:example/screens/debounce.dart';
 import 'package:example/screens/navigation.dart';
 import 'package:example/screens/persist.dart';
 import 'package:example/store.dart';
@@ -15,6 +16,11 @@ void main() {
       store: AppStore(),
       interceptors: [
         RateLimiter(),
+        Debouncer(),
+        StorePersister(
+          persistOn: {IncrementCount},
+          save: () async => SaveStore(),
+        ),
       ],
       child: App(),
     ),
@@ -97,6 +103,13 @@ class Home extends StatelessWidget {
             builder: (_) => RateLimiterExample(),
             title: "Rate Limiter - lib/screens/ratelimit.dart",
             body: "Rate limit a mutation to 1/second "
+                "using an Interceptor",
+          ),
+          item(
+            context: context,
+            builder: (_) => DebounceExample(),
+            title: "Debouncer - lib/screens/debounce.dart",
+            body: "Debounce a search mutation as you type "
                 "using an Interceptor",
           ),
         ],
